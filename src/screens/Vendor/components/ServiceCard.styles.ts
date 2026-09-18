@@ -27,6 +27,22 @@ export const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.md,
+    marginRight: spacing.md,
+    backgroundColor: colors.muted,
+  },
+  thumbFallback: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.md,
+    marginRight: spacing.md,
+    backgroundColor: colors.muted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   info: {
     flex: 1,
     minWidth: 0,

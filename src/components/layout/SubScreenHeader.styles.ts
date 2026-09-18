@@ -1,9 +1,6 @@
 import { Platform, StyleSheet } from 'react-native';
 import { colors, fontFamily, spacing } from '../../styles';
 
-// White header, plain chevron (no button box), title left-aligned next to
-// the arrow, rounded bottom corners with a subtle shadow floating it above
-// the scrollable content below.
 export const styles = StyleSheet.create({
   wrap: {
     flexDirection: 'row',

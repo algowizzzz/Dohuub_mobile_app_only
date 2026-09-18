@@ -49,7 +49,11 @@ export default function ServicesScreen({ navigation, route }: Props) {
   const vendors = useMemo(() => {
     const byVendor = new Map<
       string,
-      (typeof services)[number]['vendor'] & { serviceCount: number; minPrice: number }
+      (typeof services)[number]['vendor'] & {
+        serviceCount: number;
+        minPrice: number;
+        coverImage: string | null;
+      }
     >();
 
     services.forEach(service => {
@@ -58,11 +62,13 @@ export default function ServicesScreen({ navigation, route }: Props) {
       if (existing) {
         existing.serviceCount += 1;
         existing.minPrice = Math.min(existing.minPrice, effectivePrice);
+        if (!existing.coverImage && service.image) existing.coverImage = service.image;
       } else {
         byVendor.set(service.vendor.id, {
           ...service.vendor,
           serviceCount: 1,
           minPrice: effectivePrice,
+          coverImage: service.image || null,
         });
       }
     });

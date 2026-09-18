@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
 import type { ApiVendorService } from '../../../services/catalogApi';
@@ -17,10 +17,24 @@ export default function ServiceCard({ service, ratingAverage, ratingCount, onPre
   const price = service.discountedPrice ?? service.price;
   const duration = formatDurationHours(service.serviceTimeInMinutes);
   const showRating = (ratingCount ?? 0) > 0 && typeof ratingAverage === 'number';
+  const [imageBroken, setImageBroken] = useState(false);
+  const photo = service.image?.trim() || '';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       <View style={styles.topRow}>
+        {photo && !imageBroken ? (
+          <Image
+            source={{ uri: photo }}
+            style={styles.thumb}
+            resizeMode="cover"
+            onError={() => setImageBroken(true)}
+          />
+        ) : (
+          <View style={styles.thumbFallback}>
+            <Icon name="image-outline" size={20} color={colors.textFaint} />
+          </View>
+        )}
         <View style={styles.info}>
           <Text style={styles.name} numberOfLines={2}>
             {service.name}

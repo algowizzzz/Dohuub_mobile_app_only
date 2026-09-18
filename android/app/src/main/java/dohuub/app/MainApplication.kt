@@ -1,4 +1,4 @@
-package com.dohuub
+package dohuub.app
 
 import android.app.Application
 import com.facebook.react.PackageList

@@ -13,14 +13,7 @@ export const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: 13,
     color: colors.textMuted,
-    marginBottom: spacing.sm,
-  },
-  body: {
-    fontFamily: fontFamily.regular,
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   contactCard: {
     flexDirection: 'row',

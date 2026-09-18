@@ -2028,105 +2028,6 @@ PODS:
     - Yoga
   - RNInAppBrowser (3.7.1):
     - React-Core
-  - RNReanimated (4.5.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNReanimated/apple (= 4.5.3)
-    - RNReanimated/common (= 4.5.3)
-    - RNReanimated/view (= 4.5.3)
-    - RNWorklets
-    - Yoga
-  - RNReanimated/apple (4.5.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets
-    - Yoga
-  - RNReanimated/common (4.5.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets
-    - Yoga
-  - RNReanimated/view (4.5.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets
-    - Yoga
   - RNScreens (4.27.0):
     - hermes-engine
     - RCTRequired
@@ -2229,77 +2130,6 @@ PODS:
     - React-Fabric
     - React-featureflags
     - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
-  - RNWorklets (0.11.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - RNWorklets/apple (= 0.11.3)
-    - RNWorklets/common (= 0.11.3)
-    - Yoga
-  - RNWorklets/apple (0.11.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
-  - RNWorklets/common (0.11.3):
-    - hermes-engine
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
     - React-ImageManager
     - React-jsi
     - React-NativeModulesApple
@@ -2506,11 +2336,9 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
-  - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
-  - RNWorklets (from `../node_modules/react-native-worklets`)
   - "stripe-react-native (from `../node_modules/@stripe/stripe-react-native`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -2694,16 +2522,12 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNInAppBrowser:
     :path: "../node_modules/react-native-inappbrowser-reborn"
-  RNReanimated:
-    :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
-  RNWorklets:
-    :path: "../node_modules/react-native-worklets"
   stripe-react-native:
     :path: "../node_modules/@stripe/stripe-react-native"
   Yoga:
@@ -2793,11 +2617,9 @@ SPEC CHECKSUMS:
   RNCClipboard: 715fa7c6c8366f17d00f05a439ee7488f390fa5f
   RNGestureHandler: a426f18ab9021991fe2cbc8bf1677b740e20e70c
   RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
-  RNReanimated: 5aa9e73d0f8d3c40d5c9bec396d6a61098db31f0
   RNScreens: de068bbd7d91b820fedac25c597d4b14830de74b
   RNSVG: 6cae8d4082913be2eb43eaec2a456222c42195ed
   RNVectorIcons: 97f26211c07d69e45b189f9dd0dbbe5e2d2b0b92
-  RNWorklets: 9052122d7f98de547d247e775ea2069839236d38
   Stripe: 2aa937a5b3dc1db7b42392a70cd4d4534dd2e77b
   stripe-react-native: 07e9b03f66d1eadc94d0d5fbca597bbf75a0bca3
   StripeApplePay: 73d55b6586e0acf7c5897100bf3dc7924488cf2d

@@ -16,12 +16,14 @@ export const styles = StyleSheet.create({
     width: 112,
     height: 112,
     borderRadius: 28,
-    overflow: 'hidden',
     marginBottom: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
-    width: '100%',
-    height: '100%',
+    width: 112,
+    height: 112,
+    borderRadius: 28,
   },
   sectionTitle: {
     alignSelf: 'stretch',

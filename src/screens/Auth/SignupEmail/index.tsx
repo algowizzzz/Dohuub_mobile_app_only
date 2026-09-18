@@ -16,6 +16,7 @@ import GoogleSignInButton from '../../../components/ui/GoogleSignInButton';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import { postAuthRoute } from '../../../navigation/postAuthRoute';
 import SignupFooterLinks from './components/SignupFooterLinks';
 import { styles } from './styles';
 
@@ -63,16 +64,7 @@ export default function SignupEmailScreen({ navigation }: Props) {
     setError(null);
     try {
       const customer = await signInWithGoogle(referralCode.trim() || undefined);
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [
-            customer.profileComplete
-              ? { name: 'Main', params: { screen: 'Home' } }
-              : { name: 'EnableLocation' },
-          ],
-        }),
-      );
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
     } catch (err) {
       if (err instanceof ApiError && err.isCancelled) return;
       setError(ApiError.messageOf(err, 'Could not sign up with Google.'));

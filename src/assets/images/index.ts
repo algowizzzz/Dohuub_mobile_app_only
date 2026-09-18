@@ -1,5 +1,7 @@
-export const logo = require('./logo.png');
-export const logoBlue = require('./logo-blue.png');
+export const logo = require('./image.png');
+/** Original blue infinity mark for full-screen auth (welcome/signup). */
+export const authLogo = require('./logo.png');
+export const logoBlue = require('./image.png');
 export const logoLockupWhite = require('./logo-lockup-white.png');
 export const splash = require('./splash.png');
 export const iconInfinityWhite = require('./icon-infinity-white.png');

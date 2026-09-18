@@ -22,7 +22,13 @@ function mapFaqList(data: ApiFaqRaw[] | { items?: ApiFaqRaw[]; faqs?: ApiFaqRaw[
   return items.map(toFaq);
 }
 
-export type ContentDocumentKind = 'terms' | 'privacy' | 'about';
+export type ContentDocumentKind =
+  | 'terms'
+  | 'privacy'
+  | 'about'
+  | 'delete-account'
+  | 'marketing'
+  | 'support';
 
 export type ApiContentDocumentRaw = {
   id: string;

@@ -18,6 +18,8 @@ export const usersApi = {
   update: (payload: { fullName?: string; phoneNumber?: string; timezone?: string; language?: string }) =>
     patch<{ user: ApiUser }>('/users/me', payload),
 
+  completeOnboarding: () => post<{ user: ApiUser }>('/users/me/complete-onboarding'),
+
   dashboard: () => get<Record<string, unknown>>('/users/me/dashboard'),
 
   deleteMe: () => del<void>('/users/me', { data: { confirm: true } } as never),

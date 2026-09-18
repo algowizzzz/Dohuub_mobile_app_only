@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
 import { styles } from './VendorListCard.styles';
@@ -14,6 +14,7 @@ type VendorSummary = {
   serviceCount: number;
   minPrice: number;
   poweredByDoHuub?: boolean;
+  coverImage?: string | null;
 };
 
 type Props = {
@@ -25,25 +26,30 @@ export default function VendorListCard({ vendor, onPress }: Props) {
   const tagline =
     [vendor.city, vendor.state].filter(Boolean).join(', ') ||
     `${vendor.serviceCount} ${vendor.serviceCount === 1 ? 'service' : 'services'} available`;
+  const cover = vendor.coverImage?.trim() || '';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <View style={styles.cardRow}>
-        <View style={styles.logoFallback}>
-          <Icon name="business" size={22} color={colors.textMuted} />
-        </View>
+        {cover ? (
+          <Image source={{ uri: cover }} style={styles.logo} resizeMode="cover" />
+        ) : (
+          <View style={styles.logoFallback}>
+            <Icon name="business" size={22} color={colors.textMuted} />
+          </View>
+        )}
 
         <View style={styles.info}>
-          <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>
-              {vendor.businessName}
-            </Text>
-            {vendor.poweredByDoHuub ? (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>Powered by DoHuub</Text>
-              </View>
-            ) : null}
-          </View>
+          <Text style={styles.name} numberOfLines={1}>
+            {vendor.businessName}
+          </Text>
+          {vendor.poweredByDoHuub ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText} numberOfLines={1}>
+                Powered by DoHuub
+              </Text>
+            </View>
+          ) : null}
 
           <View style={styles.ratingRow}>
             {vendor.ratingCount > 0 ? (

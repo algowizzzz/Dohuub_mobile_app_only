@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
@@ -111,14 +110,11 @@ export default function VendorScreen({ navigation, route }: Props) {
             )}
             <Text style={styles.vendorName}>{vendor.businessName}</Text>
             {vendor.poweredByDoHuub ? (
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.badge}
-              >
-                <Text style={styles.badgeText}>Powered by DoHuub</Text>
-              </LinearGradient>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText} numberOfLines={1}>
+                  Powered by DoHuub
+                </Text>
+              </View>
             ) : null}
             <View style={styles.ratingRow}>
               {vendor.ratingCount > 0 ? (

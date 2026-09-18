@@ -13,6 +13,7 @@ import PrimaryButton from '../../../components/ui/PrimaryButton';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import { postAuthRoute } from '../../../navigation/postAuthRoute';
 import AuthFooterLinks from './components/AuthFooterLinks';
 import { styles } from './styles';
 
@@ -27,22 +28,13 @@ export default function LoginScreen({ navigation }: Props) {
 
   const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
 
-  const goToMain = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Main', params: { screen: 'Home' } }],
-      }),
-    );
-  };
-
   const handleSignIn = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
     try {
-      await signIn({ email: email.trim(), password });
-      goToMain();
+      const customer = await signIn({ email: email.trim(), password });
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
     } catch (err) {
       setError(ApiError.messageOf(err, 'Could not sign in. Please try again.'));
     } finally {

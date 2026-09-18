@@ -82,6 +82,13 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
+  vendorAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    marginRight: spacing.md,
+    backgroundColor: colors.secondarySurface,
+  },
   vendorInfo: {
     flex: 1,
   },

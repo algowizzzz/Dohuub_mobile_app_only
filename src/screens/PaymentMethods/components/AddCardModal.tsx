@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, initialWindowMetrics } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { CardField, useConfirmSetupIntent, type CardFieldInput } from '@stripe/stripe-react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -16,6 +17,7 @@ import { colors } from '../../../styles';
 import { cardsApi } from '../../../services/accountApi';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import PrimaryButton from '../../../components/ui/PrimaryButton';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import SubScreenHeader from '../../../components/layout/SubScreenHeader';
 import { styles } from './AddCardModal.styles';
@@ -114,118 +116,120 @@ export default function AddCardModal({ visible, onCancel, onSave }: Props) {
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="fullScreen" onRequestClose={handleCancel}>
-      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-        <ScreenStatusBar backgroundColor={colors.white} barStyle="dark-content" />
-        <SubScreenHeader title="Add Payment Card" onBack={handleCancel} />
+      {/* Modal mounts outside the app SafeAreaProvider — without this, insets are 0 on iOS. */}
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+          <ScreenStatusBar backgroundColor={colors.white} barStyle="dark-content" />
+          <SubScreenHeader title="Add Payment Card" onBack={handleCancel} />
 
-        <View style={styles.body}>
-          <KeyboardAvoidingView
-            style={styles.flex}
-            behavior="padding"
-          >
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
+          <View style={styles.body}>
+            <KeyboardAvoidingView
+              style={styles.flex}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.preview}
+              <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
               >
-                <View style={styles.previewTop}>
-                  <View style={styles.chip} />
-                  <Text style={styles.previewBrand}>{capitalizeBrand(brand)}</Text>
-                </View>
-                <Text style={styles.previewNumber}>{previewNumber}</Text>
-                <View style={styles.previewBottom}>
-                  <View>
-                    <Text style={styles.previewLabel}>Cardholder Name</Text>
-                    <Text style={styles.previewValue}>
-                      {nameOnCard.trim() ? nameOnCard.trim().toUpperCase() : 'FULL NAME'}
-                    </Text>
+                <View style={styles.preview}>
+                  <LinearGradient
+                    colors={[colors.gradientStart, colors.gradientEnd]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.previewFill}
+                    pointerEvents="none"
+                  />
+                  <View style={styles.previewContent}>
+                    <View style={styles.previewTop}>
+                      <View style={styles.chip} />
+                      <Text style={styles.previewBrand}>{capitalizeBrand(brand)}</Text>
+                    </View>
+                    <Text style={styles.previewNumber}>{previewNumber}</Text>
+                    <View style={styles.previewBottom}>
+                      <View>
+                        <Text style={styles.previewLabel}>Cardholder Name</Text>
+                        <Text style={styles.previewValue}>
+                          {nameOnCard.trim() ? nameOnCard.trim().toUpperCase() : 'FULL NAME'}
+                        </Text>
+                      </View>
+                      <View style={styles.previewExpiryCol}>
+                        <Text style={styles.previewLabel}>Expires</Text>
+                        <Text style={styles.previewValue}>{previewExpiry}</Text>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.previewExpiryCol}>
-                    <Text style={styles.previewLabel}>Expires</Text>
-                    <Text style={styles.previewValue}>{previewExpiry}</Text>
-                  </View>
                 </View>
-              </LinearGradient>
 
-              <Text style={styles.label}>Cardholder Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={nameOnCard}
-                onChangeText={text => setNameOnCard(text.toUpperCase())}
-                placeholder="JOHN DOE"
-                placeholderTextColor={colors.textMuted}
-                autoCapitalize="characters"
-              />
+                <Text style={styles.label}>Cardholder Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={nameOnCard}
+                  onChangeText={text => setNameOnCard(text.toUpperCase())}
+                  placeholder="JOHN DOE"
+                  placeholderTextColor={colors.textMuted}
+                  autoCapitalize="characters"
+                />
 
-              <Text style={styles.label}>Card details *</Text>
-              <CardField
-                key={fieldKey}
-                postalCodeEnabled={false}
-                placeholders={{ number: '1234 5678 9012 3456' }}
-                cardStyle={{
-                  backgroundColor: colors.white,
-                  borderColor: colors.border,
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  textColor: colors.text,
-                  placeholderColor: colors.textMuted,
-                  fontSize: 16,
-                }}
-                style={styles.cardField}
-                onCardChange={handleCardChange}
-              />
-              <Text style={styles.helper}>
-                Number, expiry and CVV stay with Stripe. They never reach DoHuub.
-              </Text>
-
-              <TouchableOpacity
-                style={styles.checkboxRow}
-                onPress={() => setSetAsDefault(prev => !prev)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.checkbox, setAsDefault && styles.checkboxChecked]}>
-                  {setAsDefault ? <Icon name="checkmark" size={14} color={colors.white} /> : null}
+                <Text style={styles.label}>Card details *</Text>
+                <View style={styles.cardFieldWrap}>
+                  <CardField
+                    key={fieldKey}
+                    postalCodeEnabled={false}
+                    // Android sizes the number input from the placeholder width —
+                    // pad so the full 16-digit PAN can be typed on first focus.
+                    placeholders={{
+                      number: '4242 4242 4242 4242          ',
+                      expiration: 'MM/YY',
+                      cvc: 'CVC',
+                    }}
+                    cardStyle={{
+                      backgroundColor: colors.white,
+                      borderColor: colors.border,
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      textColor: colors.text,
+                      placeholderColor: colors.textMuted,
+                      fontSize: 14,
+                      cursorColor: colors.primary,
+                    }}
+                    style={styles.cardField}
+                    onCardChange={handleCardChange}
+                  />
                 </View>
-                <Text style={styles.checkboxLabel}>Set as default payment method</Text>
-              </TouchableOpacity>
+                <Text style={styles.helper}>
+                  Number, expiry and CVV stay with Stripe. They never reach DoHuub.
+                </Text>
 
-              {error ? <ErrorBanner message={error} /> : null}
-
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.secureBar}
-              >
-                <Icon name="lock-closed" size={16} color={colors.white} />
-                <Text style={styles.secureBarLabel}>Secured by Stripe</Text>
-              </LinearGradient>
-
-              <TouchableOpacity
-                style={[styles.addButtonWrap, !canSave && styles.addButtonDisabled]}
-                onPress={handleSave}
-                disabled={!canSave}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={[colors.gradientStart, colors.gradientEnd]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.addButton}
+                <TouchableOpacity
+                  style={styles.checkboxRow}
+                  onPress={() => setSetAsDefault(prev => !prev)}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.addButtonLabel}>{submitting ? 'Saving…' : 'Add Card'}</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </View>
-      </SafeAreaView>
+                  <View style={[styles.checkbox, setAsDefault && styles.checkboxChecked]}>
+                    {setAsDefault ? <Icon name="checkmark" size={14} color={colors.white} /> : null}
+                  </View>
+                  <Text style={styles.checkboxLabel}>Set as default payment method</Text>
+                </TouchableOpacity>
+
+                {error ? <ErrorBanner message={error} /> : null}
+
+                <View style={styles.secureBar}>
+                  <Icon name="lock-closed" size={16} color={colors.white} />
+                  <Text style={styles.secureBarLabel}>Secured by Stripe</Text>
+                </View>
+
+                <PrimaryButton
+                  label={submitting ? 'Saving…' : 'Add Card'}
+                  onPress={handleSave}
+                  disabled={!canSave}
+                  loading={submitting}
+                />
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 }

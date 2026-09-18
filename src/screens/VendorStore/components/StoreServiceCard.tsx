@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
@@ -20,11 +20,18 @@ export default function StoreServiceCard({
 }: Props) {
   const price = service.discountedPrice ?? service.price;
   const showRating = ratingCount > 0;
+  const [imageBroken, setImageBroken] = useState(false);
+  const photo = service.image?.trim() || '';
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      {service.image ? (
-        <Image source={{ uri: service.image }} style={styles.image} />
+      {photo && !imageBroken ? (
+        <Image
+          source={{ uri: photo }}
+          style={styles.image}
+          resizeMode="cover"
+          onError={() => setImageBroken(true)}
+        />
       ) : (
         <View style={styles.imageFallback}>
           <Icon name="sparkles" size={24} color={colors.textFaint} />

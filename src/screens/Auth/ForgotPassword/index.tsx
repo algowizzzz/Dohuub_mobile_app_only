@@ -30,7 +30,7 @@ export default function ForgotPasswordScreen({ navigation }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      await forgotPassword(email.trim());
+      await forgotPassword(email.trim().toLowerCase());
       setSent(true);
     } catch (err) {
       setError(ApiError.messageOf(err, 'Could not send the reset link.'));

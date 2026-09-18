@@ -1,6 +1,5 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { styles } from './EarnPointsCard.styles';
 
@@ -36,12 +35,7 @@ export default function EarnPointsCard({ pointsPerDollar }: Props) {
   const unit = rate === 1 ? 'point' : 'points';
 
   return (
-    <LinearGradient
-      colors={['rgba(245, 158, 11, 0.1)', 'rgba(249, 115, 22, 0.1)']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}
-    >
+    <View style={styles.card}>
       <View style={styles.iconWrap}>
         <GiftOutline />
       </View>
@@ -51,6 +45,6 @@ export default function EarnPointsCard({ pointsPerDollar }: Props) {
           {rate} {unit} per $1 spent • Points added after service completion
         </Text>
       </View>
-    </LinearGradient>
+    </View>
   );
 }

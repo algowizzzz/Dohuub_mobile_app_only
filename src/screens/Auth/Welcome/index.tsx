@@ -8,10 +8,11 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../styles';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import GoogleIcon from '../../../components/ui/GoogleIcon';
-import { logo } from '../../../assets/images';
+import { authLogo } from '../../../assets/images';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import { postAuthRoute } from '../../../navigation/postAuthRoute';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
@@ -21,28 +22,13 @@ export default function WelcomeScreen({ navigation }: Props) {
   const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const goToMain = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'Main', params: { screen: 'Home' } }],
-      }),
-    );
-  };
-
   const handleGoogleSignIn = async () => {
     if (googleBusy) return;
     setGoogleBusy(true);
     setError(null);
     try {
       const customer = await signInWithGoogle();
-      if (!customer.profileComplete) {
-        navigation.dispatch(
-          CommonActions.reset({ index: 0, routes: [{ name: 'EnableLocation' }] }),
-        );
-        return;
-      }
-      goToMain();
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
     } catch (err) {
       if (err instanceof ApiError && err.isCancelled) return;
       setError(ApiError.messageOf(err, 'Could not sign in with Google.'));
@@ -63,7 +49,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       ) : null}
 
       <View style={styles.body}>
-        <Image source={logo} style={styles.logo} resizeMode="contain" />
+        <Image source={authLogo} style={styles.logo} resizeMode="contain" />
         {/* <Text style={styles.wordmark}>DoHuub</Text>
         <Text style={styles.tagline}>INFINITE SERVICE</Text> */}
 

@@ -22,6 +22,15 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dohuub</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -33,14 +42,22 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>DoHuub needs access to your camera so you can take a profile picture.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>DoHuub uses your location to show the nearest service providers and speed up address entry.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>DoHuub needs access to your photo library so you can choose a profile picture.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>DoHuub needs access to your camera so you can take a profile picture.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Ionicons.ttf</string>
+		<string>Inter-Medium.ttf</string>
+		<string>Inter-Bold.ttf</string>
+		<string>Inter-Regular.ttf</string>
+		<string>Inter-SemiBold.ttf</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -60,22 +77,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Ionicons.ttf</string>
-		<string>Inter-Medium.ttf</string>
-		<string>Inter-Bold.ttf</string>
-		<string>Inter-Regular.ttf</string>
-		<string>Inter-SemiBold.ttf</string>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>dohuub</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>

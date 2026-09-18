@@ -66,18 +66,11 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  logoMark: {
+  logoImage: {
     width: 34,
     height: 34,
-    borderRadius: radius.sm,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 10,
     marginRight: spacing.sm,
-  },
-  logoImage: {
-    width: 22,
-    height: 22,
   },
   brandName: {
     fontFamily: fontFamily.bold,

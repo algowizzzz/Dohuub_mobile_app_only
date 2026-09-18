@@ -17,11 +17,14 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.purpleLight,
     gap: 8,
     paddingHorizontal: spacing.sm,
+    paddingVertical: 12,
   },
   referLabel: {
     fontFamily: fontFamily.medium,
     fontSize: 14,
+    lineHeight: 18,
     color: colors.purple,
+    includeFontPadding: false,
   },
   historyButton: {
     flex: 1,
@@ -33,10 +36,13 @@ export const styles = StyleSheet.create({
     backgroundColor: colors.secondarySurface,
     gap: 8,
     paddingHorizontal: spacing.sm,
+    paddingVertical: 12,
   },
   historyLabel: {
     fontFamily: fontFamily.medium,
     fontSize: 14,
+    lineHeight: 18,
     color: colors.text,
+    includeFontPadding: false,
   },
 });

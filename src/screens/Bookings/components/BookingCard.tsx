@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
 import type { ApiBooking } from '../../../services/bookingApi';
@@ -22,12 +22,23 @@ export default function BookingCard({ booking, onPress }: Props) {
   const status = STATUS_META[booking.status];
   const addressLine = formatBookingAddress(booking);
   const when = `${booking.scheduledDate} at ${formatScheduledTime(booking.scheduledTime)}`;
+  const photo = booking.service?.image?.trim() || '';
+  const [imageBroken, setImageBroken] = useState(false);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      <View style={styles.iconWrap}>
-        <Icon name="sparkles" size={32} color={colors.primary} />
-      </View>
+      {photo && !imageBroken ? (
+        <Image
+          source={{ uri: photo }}
+          style={styles.thumb}
+          resizeMode="cover"
+          onError={() => setImageBroken(true)}
+        />
+      ) : (
+        <View style={styles.iconWrap}>
+          <Icon name="sparkles" size={32} color={colors.primary} />
+        </View>
+      )}
 
       <View style={styles.body}>
         <Text style={styles.serviceName} numberOfLines={1}>

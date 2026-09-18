@@ -8,10 +8,11 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../styles';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import GoogleIcon from '../../../components/ui/GoogleIcon';
-import { logo } from '../../../assets/images';
+import { authLogo } from '../../../assets/images';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import { postAuthRoute } from '../../../navigation/postAuthRoute';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
@@ -27,16 +28,7 @@ export default function SignupScreen({ navigation }: Props) {
     setError(null);
     try {
       const customer = await signInWithGoogle();
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [
-            customer.profileComplete
-              ? { name: 'Main', params: { screen: 'Home' } }
-              : { name: 'EnableLocation' },
-          ],
-        }),
-      );
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
     } catch (err) {
       if (err instanceof ApiError && err.isCancelled) return;
       setError(ApiError.messageOf(err, 'Could not sign up with Google.'));
@@ -57,7 +49,7 @@ export default function SignupScreen({ navigation }: Props) {
       ) : null}
 
       <View style={styles.body}>
-        <Image source={logo} style={styles.logo} resizeMode="contain" />
+        <Image source={authLogo} style={styles.logo} resizeMode="contain" />
         <Text style={styles.tagline}>Create Your Account</Text>
 
         <View style={styles.actions}>

@@ -12,6 +12,7 @@ import SubScreenHeader from '../../../components/layout/SubScreenHeader';
 import LoadingState from '../../../components/ui/LoadingState';
 import ErrorState from '../../../components/ui/ErrorState';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import PrimaryButton from '../../../components/ui/PrimaryButton';
 import { ApiError } from '../../../services/ApiError';
 import { usePaymentCardStore } from '../../../store/paymentCardStore';
 import { styles } from './styles';
@@ -119,30 +120,34 @@ export default function EditPaymentCardScreen({ navigation, route }: Props) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.preview}
-          >
-            <View style={styles.previewTop}>
-              <View style={styles.chip} />
-              <Text style={styles.previewBrand}>{capitalizeBrand(card.brand)}</Text>
-            </View>
-            <Text style={styles.previewNumber}>{maskedNumber}</Text>
-            <View style={styles.previewBottom}>
-              <View>
-                <Text style={styles.previewLabel}>Cardholder Name</Text>
-                <Text style={styles.previewValue}>{holderName || 'FULL NAME'}</Text>
+          <View style={styles.preview}>
+            <LinearGradient
+              colors={[colors.gradientStart, colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.previewFill}
+              pointerEvents="none"
+            />
+            <View style={styles.previewContent}>
+              <View style={styles.previewTop}>
+                <View style={styles.chip} />
+                <Text style={styles.previewBrand}>{capitalizeBrand(card.brand)}</Text>
               </View>
-              <View style={styles.previewExpiryCol}>
-                <Text style={styles.previewLabel}>Expires</Text>
-                <Text style={styles.previewValue}>
-                  {month && year ? `${month}/${year}` : 'MM/YYYY'}
-                </Text>
+              <Text style={styles.previewNumber}>{maskedNumber}</Text>
+              <View style={styles.previewBottom}>
+                <View>
+                  <Text style={styles.previewLabel}>Cardholder Name</Text>
+                  <Text style={styles.previewValue}>{holderName || 'FULL NAME'}</Text>
+                </View>
+                <View style={styles.previewExpiryCol}>
+                  <Text style={styles.previewLabel}>Expires</Text>
+                  <Text style={styles.previewValue}>
+                    {month && year ? `${month}/${year}` : 'MM/YYYY'}
+                  </Text>
+                </View>
               </View>
             </View>
-          </LinearGradient>
+          </View>
 
           <View style={styles.field}>
             <FieldLabel>Card Number</FieldLabel>
@@ -215,31 +220,17 @@ export default function EditPaymentCardScreen({ navigation, route }: Props) {
 
           {error ? <ErrorBanner message={error} /> : null}
 
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.secureBar}
-          >
+          <View style={styles.secureBar}>
             <Icon name="lock-closed" size={16} color={colors.white} />
             <Text style={styles.secureBarLabel}>Secured by Stripe</Text>
-          </LinearGradient>
+          </View>
 
-          <TouchableOpacity
-            style={[styles.saveButtonWrap, submitting && styles.saveButtonDisabled]}
+          <PrimaryButton
+            label={submitting ? 'Saving…' : 'Save Changes'}
             onPress={handleSave}
             disabled={submitting}
-            activeOpacity={0.85}
-          >
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.saveButton}
-            >
-              <Text style={styles.saveButtonLabel}>{submitting ? 'Saving…' : 'Save Changes'}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+            loading={submitting}
+          />
         </ScrollView>
       </View>
     </SafeAreaView>

@@ -32,6 +32,13 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    backgroundColor: colors.secondarySurface,
+    marginRight: spacing.md,
+  },
   body: {
     flex: 1,
     minWidth: 0,

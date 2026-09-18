@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../styles';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import type { AddressType } from '../../SavedAddresses/addresses';
+import { useAuthStore } from '../../../store/authStore';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SignupAddresses'>;
@@ -21,6 +22,7 @@ const ROWS: Array<{ type: AddressType; icon: string; label: string; hint: string
 
 export default function SignupAddressesScreen({ navigation }: Props) {
   const goHome = () => {
+    useAuthStore.getState().completeOnboarding().catch(() => {});
     navigation.dispatch(
       CommonActions.reset({
         index: 0,

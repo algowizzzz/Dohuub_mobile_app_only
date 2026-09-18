@@ -18,6 +18,7 @@
     "@react-navigation/bottom-tabs": "^7.18.16",
     "@react-navigation/native": "^7.3.16",
     "@react-navigation/native-stack": "^7.18.8",
+    "@reduxjs/toolkit": "^2.12.0",
     "@stripe/stripe-react-native": "^0.74.0",
     "axios": "^1.19.0",
     "phosphor-react-native": "^3.0.6",
@@ -28,12 +29,12 @@
     "react-native-image-picker": "^8.2.1",
     "react-native-inappbrowser-reborn": "^3.7.1",
     "react-native-linear-gradient": "^2.8.3",
-    "react-native-reanimated": "^4.5.3",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.27.0",
     "react-native-svg": "^15.15.5",
     "react-native-vector-icons": "^10.3.0",
-    "react-native-worklets": "^0.11.3",
+    "react-redux": "^9.3.0",
+    "redux-persist": "^6.0.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

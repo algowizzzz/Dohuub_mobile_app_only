@@ -4,7 +4,6 @@ import { colors, fontFamily, radius, spacing } from '../../../styles';
 export const styles = StyleSheet.create({
   card: {
     borderRadius: radius.xl,
-    padding: spacing.lg,
     marginBottom: spacing.md,
     overflow: 'hidden',
     ...Platform.select({
@@ -19,27 +18,40 @@ export const styles = StyleSheet.create({
       },
     }),
   },
+  inner: {
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    justifyContent: 'center',
+    marginBottom: 8,
     gap: 8,
   },
   label: {
     fontFamily: fontFamily.medium,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.82)',
+    lineHeight: 20,
+    color: 'rgba(255,255,255,0.85)',
+    includeFontPadding: false,
   },
   points: {
     fontFamily: fontFamily.bold,
-    fontSize: 36,
+    fontSize: 40,
+    lineHeight: 48,
     color: colors.white,
-    lineHeight: 42,
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   value: {
     fontFamily: fontFamily.regular,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.72)',
+    lineHeight: 20,
+    color: 'rgba(255,255,255,0.75)',
     marginTop: 4,
+    textAlign: 'center',
+    includeFontPadding: false,
   },
 });

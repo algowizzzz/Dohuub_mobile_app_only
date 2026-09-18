@@ -1,8 +1,11 @@
 import React, { useEffect } from 'react';
 import { Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../styles';
+import type { RootStackParamList } from '../../navigation/types';
 import type { ApiNotification } from '../../services/engagementApi';
 import { useNotificationStore } from '../../store/notificationStore';
 import LoadingState from './LoadingState';
@@ -31,7 +34,7 @@ function iconMetaFor(notification: ApiNotification): IconMeta {
   if (/remind|upcoming/.test(blob)) return ICONS.reminder;
   if (/complete|rated|finished/.test(blob)) return ICONS.update;
   if (/point|reward|gift/.test(blob)) return ICONS.points;
-  if (/progress|placed|order|book|package/.test(blob)) return ICONS.order;
+  if (/progress|placed|order|book|package|payment/.test(blob)) return ICONS.order;
   return ICONS.default;
 }
 
@@ -87,6 +90,7 @@ function NotificationRow({
 
 export default function NotificationsModal({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const notifications = useNotificationStore(state => state.notifications);
   const loading = useNotificationStore(state => state.loading);
   const error = useNotificationStore(state => state.error);
@@ -98,6 +102,15 @@ export default function NotificationsModal({ visible, onClose }: Props) {
   useEffect(() => {
     if (visible) load().catch(() => {});
   }, [visible, load]);
+
+  const openNotification = async (notification: ApiNotification) => {
+    await markRead(notification.id).catch(() => {});
+    onClose();
+    const bookingId = notification.data?.bookingId;
+    if (typeof bookingId === 'string' && bookingId) {
+      navigation.navigate('BookingDetail', { bookingId });
+    }
+  };
 
   return (
     <Modal
@@ -147,7 +160,7 @@ export default function NotificationsModal({ visible, onClose }: Props) {
                   <NotificationRow
                     key={notification.id}
                     notification={notification}
-                    onPress={() => markRead(notification.id)}
+                    onPress={() => openNotification(notification)}
                   />
                 ))
               )}

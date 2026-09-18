@@ -18,12 +18,15 @@ export default function BalanceCard({ points, value }: Props) {
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
-      <View style={styles.row}>
-        <Icon name="gift-outline" size={22} color="rgba(255,255,255,0.85)" />
-        <Text style={styles.label}>Available Points</Text>
+      {/* Inner pad — LinearGradient ignores padding on Android */}
+      <View style={styles.inner}>
+        <View style={styles.row}>
+          <Icon name="gift-outline" size={22} color="rgba(255,255,255,0.85)" />
+          <Text style={styles.label}>Available Points</Text>
+        </View>
+        <Text style={styles.points}>{points.toLocaleString()}</Text>
+        <Text style={styles.value}>≈ ${value.toFixed(2)} value</Text>
       </View>
-      <Text style={styles.points}>{points.toLocaleString()}</Text>
-      <Text style={styles.value}>≈ ${value.toFixed(2)} value</Text>
     </LinearGradient>
   );
 }

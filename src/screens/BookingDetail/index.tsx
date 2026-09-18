@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -120,14 +120,22 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
             activeOpacity={0.85}
             onPress={() => navigation.navigate('Vendor', { vendorId: booking.vendorId })}
           >
-            <LinearGradient
-              colors={[colors.gradientCtaStart, colors.gradientCtaEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.serviceIconWrap}
-            >
-              <Icon name="sparkles" size={24} color={colors.white} />
-            </LinearGradient>
+            {booking.service.image ? (
+              <Image
+                source={{ uri: booking.service.image }}
+                style={styles.serviceThumb}
+                resizeMode="cover"
+              />
+            ) : (
+              <LinearGradient
+                colors={[colors.gradientCtaStart, colors.gradientCtaEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.serviceIconWrap}
+              >
+                <Icon name="sparkles" size={24} color={colors.white} />
+              </LinearGradient>
+            )}
             <View style={styles.serviceInfo}>
               <Text style={styles.serviceName}>{booking.service.name}</Text>
               <Text style={styles.serviceVendor}>{booking.vendor.businessName}</Text>

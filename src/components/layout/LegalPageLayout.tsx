@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../styles';
 import { contentApi, type ContentDocumentKind } from '../../services/contentApi';
+import LegalDocumentBody from '../content/LegalDocumentBody';
 import MainScreenLayout from './MainScreenLayout';
 import SubScreenHeader from './SubScreenHeader';
 import LoadingState from '../ui/LoadingState';
@@ -54,7 +55,7 @@ export default function LegalPageLayout({ title, kind, onBack, showContactCard =
           {lastUpdated ? (
             <Text style={styles.lastUpdated}>Last updated {formatDate(lastUpdated)}</Text>
           ) : null}
-          <Text style={styles.body}>{body}</Text>
+          <LegalDocumentBody content={body} />
 
           {showContactCard ? (
             <View style={styles.contactCard}>

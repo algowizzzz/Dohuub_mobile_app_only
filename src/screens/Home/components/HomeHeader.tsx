@@ -44,9 +44,7 @@ export default function HomeHeader({
           </TouchableOpacity>
         ) : (
           <View style={styles.brand}>
-            <View style={styles.logoMark}>
-              <Image source={logo} style={styles.logoImage} resizeMode="contain" />
-            </View>
+            <Image source={logo} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.brandName}>DoHuub</Text>
           </View>
         )}

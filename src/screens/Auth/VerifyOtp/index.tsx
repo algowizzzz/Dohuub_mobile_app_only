@@ -11,6 +11,7 @@ import PrimaryButton from '../../../components/ui/PrimaryButton';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
+import { postAuthRoute } from '../../../navigation/postAuthRoute';
 import OtpInput, { CODE_LENGTH } from './components/OtpInput';
 import { styles } from './styles';
 
@@ -42,12 +43,22 @@ export default function VerifyOtpScreen({ navigation, route }: Props) {
     setSubmitting(true);
     setError(null);
     try {
-      const { signedIn } = await verifyEmailOtp(code.join(''), email);
+      const { signedIn, isNewSignup } = await verifyEmailOtp(code.join(''), email);
       if (signedIn) {
+        const customer = useAuthStore.getState().user ?? {
+          profileComplete: false,
+          hasCompletedOnboarding: false,
+        };
+        // First-time signup continues setup unless they already finished it
+        // (e.g. returning Google account that now verified email).
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: 'EnableLocation' }],
+            routes: [
+              isNewSignup && !customer.hasCompletedOnboarding
+                ? { name: 'EnableLocation' }
+                : postAuthRoute(customer),
+            ],
           }),
         );
       } else {

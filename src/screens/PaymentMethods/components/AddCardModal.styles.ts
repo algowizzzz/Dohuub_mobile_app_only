@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { colors, fontFamily, radius, spacing } from '../../../styles';
 
 export const styles = StyleSheet.create({
@@ -19,10 +19,18 @@ export const styles = StyleSheet.create({
   },
   preview: {
     borderRadius: radius.xl,
-    padding: spacing.lg,
     marginBottom: spacing.lg,
     overflow: 'hidden',
     minHeight: 188,
+    backgroundColor: colors.primary,
+  },
+  previewFill: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  previewContent: {
+    padding: spacing.lg,
+    minHeight: 188,
+    justifyContent: 'space-between',
   },
   previewTop: {
     flexDirection: 'row',
@@ -85,9 +93,14 @@ export const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.md,
   },
+  cardFieldWrap: {
+    width: '100%',
+    alignSelf: 'stretch',
+    overflow: 'visible',
+  },
   cardField: {
     width: '100%',
-    height: 52,
+    height: Platform.OS === 'android' ? 56 : 52,
   },
   helper: {
     fontFamily: fontFamily.regular,
@@ -122,43 +135,20 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
   },
-  errorText: {
-    fontFamily: fontFamily.regular,
-    fontSize: 13,
-    color: colors.danger,
-    marginBottom: spacing.md,
-  },
   secureBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.lg,
+    minHeight: 48,
     paddingVertical: 14,
     marginBottom: spacing.md,
     gap: 8,
-    overflow: 'hidden',
+    backgroundColor: colors.primary,
   },
   secureBarLabel: {
     fontFamily: fontFamily.medium,
     fontSize: 15,
     color: colors.white,
   },
-  addButtonWrap: {
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
-  addButtonDisabled: {
-    opacity: 0.5,
-  },
-  addButton: {
-    minHeight: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
-    color: colors.white,
-  },
 });
-

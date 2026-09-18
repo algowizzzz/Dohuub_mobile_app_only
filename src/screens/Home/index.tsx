@@ -11,6 +11,7 @@ import { useAddressStore } from '../../store/addressStore';
 import { useServiceLocationStore } from '../../store/serviceLocationStore';
 import { useBookingStore } from '../../store/bookingStore';
 import { useRewardsStore } from '../../store/rewardsStore';
+import { useAuthStore } from '../../store/authStore';
 import { vendorCategoriesApi, type ApiVendorCategory } from '../../services/catalogApi';
 import { ADDRESS_TYPE_META, formatAddressLine } from '../SavedAddresses/addresses';
 import HomeHeader from './components/HomeHeader';
@@ -38,6 +39,10 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState<ApiVendorCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    useAuthStore.getState().completeOnboarding().catch(() => {});
+  }, []);
 
   const loadCategories = () => {
     setCategoriesLoading(true);

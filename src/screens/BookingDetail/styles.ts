@@ -44,6 +44,13 @@ export const styles = StyleSheet.create({
     marginRight: 14,
     overflow: 'hidden',
   },
+  serviceThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    marginRight: 14,
+    backgroundColor: colors.secondarySurface,
+  },
   serviceInfo: {
     flex: 1,
     minWidth: 0,

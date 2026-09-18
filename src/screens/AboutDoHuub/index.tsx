@@ -17,12 +17,12 @@ import {
   AboutTiktok,
   AboutWrench,
 } from '../../components/icons/AboutIcons';
-import { logoBlue } from '../../assets/images';
+import { logo } from '../../assets/images';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'AboutDoHuub'>;
 
-const SUPPORT_EMAIL = 'support@dohuub.com';
+const SUPPORT_EMAIL = 'dohuubsupport@gmail.com';
 
 const OFFERS = [
   { title: 'Cleaning Services', subtitle: 'Professional home and office cleaning', Icon: AboutBroom },
@@ -49,7 +49,7 @@ export default function AboutDoHuubScreen({ navigation }: Props) {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.logoWrap}>
-          <Image source={logoBlue} style={styles.logo} resizeMode="cover" />
+          <Image source={logo} style={styles.logo} resizeMode="contain" />
         </View>
 
         <Text style={styles.sectionTitle}>Our Mission</Text>

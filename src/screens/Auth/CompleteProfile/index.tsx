@@ -16,9 +16,10 @@ import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CompleteProfile'>;
 
-export default function CompleteProfileScreen({ navigation }: Props) {
+export default function CompleteProfileScreen({ navigation, route }: Props) {
   const user = useAuthStore(state => state.user);
   const updateProfile = useAuthStore(state => state.updateProfile);
+  const continueSetup = Boolean(route.params?.continueSetup);
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [phoneValid, setPhoneValid] = useState(Boolean(user?.phone));
@@ -28,7 +29,16 @@ export default function CompleteProfileScreen({ navigation }: Props) {
   const canSave = fullName.trim().length > 0 && phoneValid && !saving;
 
   const goNext = () => {
-    navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'SignupReferral' }] }));
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [
+          continueSetup
+            ? { name: 'SignupReferral' }
+            : { name: 'Main', params: { screen: 'Home' } },
+        ],
+      }),
+    );
   };
 
   const handleSave = async () => {

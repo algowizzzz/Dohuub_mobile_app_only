@@ -4,26 +4,24 @@ import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
 import { splash } from '../../assets/images';
-import { useSessionStore } from '../../store/sessionStore';
 import { useAuthStore } from '../../store/authStore';
+import { store } from '../../store/redux/store';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Splash'>;
 
 const MIN_SPLASH_MS = 1500;
 
-function waitFor(store: { persist: { hasHydrated: () => boolean; onFinishHydration: (cb: () => void) => () => void } }): Promise<void> {
-  if (store.persist.hasHydrated()) return Promise.resolve();
-  return new Promise<void>(resolve => {
-    const unsubscribe = store.persist.onFinishHydration(() => {
-      unsubscribe();
-      resolve();
+function waitForReduxHydration(): Promise<void> {
+  if (store.getState().session.hasHydrated) return Promise.resolve();
+  return new Promise(resolve => {
+    const unsubscribe = store.subscribe(() => {
+      if (store.getState().session.hasHydrated) {
+        unsubscribe();
+        resolve();
+      }
     });
   });
-}
-
-function waitForHydration(): Promise<void> {
-  return Promise.all([waitFor(useSessionStore), waitFor(useAuthStore)]).then(() => undefined);
 }
 
 export default function SplashScreen({ navigation }: Props) {
@@ -34,29 +32,39 @@ export default function SplashScreen({ navigation }: Props) {
 
     const boot = async () => {
       const minDelay = new Promise<void>(resolve => setTimeout(() => resolve(), MIN_SPLASH_MS));
-      await Promise.all([waitForHydration(), minDelay]);
+      await Promise.all([waitForReduxHydration(), minDelay]);
       if (cancelled) return;
 
-      const hasOnboarded = useAuthStore.getState().hasOnboarded;
-      if (!hasOnboarded) {
-        navigation.replace('Onboarding');
-        return;
-      }
-
+      // Session first — signed-in users never re-run onboarding / set-profile
+      // just because local carousel flag was missing.
       const isAuthenticated = await useAuthStore.getState().restore();
       if (cancelled) return;
 
-      const profileComplete = Boolean(useAuthStore.getState().user?.profileComplete);
+      if (isAuthenticated) {
+        const user = useAuthStore.getState().user;
+        const done = Boolean(user?.hasCompletedOnboarding || user?.profileComplete);
+        useAuthStore.getState().setHasOnboarded(true);
+        if (done) {
+          useAuthStore.getState().completeOnboarding().catch(() => {});
+        }
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              done
+                ? { name: 'Main', params: { screen: 'Home' } }
+                : { name: 'CompleteProfile' },
+            ],
+          }),
+        );
+        return;
+      }
+
+      const hasOnboarded = useAuthStore.getState().hasOnboarded;
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [
-            isAuthenticated
-              ? profileComplete
-                ? { name: 'Main', params: { screen: 'Home' } }
-                : { name: 'CompleteProfile' }
-              : { name: 'Welcome' },
-          ],
+          routes: [{ name: hasOnboarded ? 'Welcome' : 'Onboarding' }],
         }),
       );
     };

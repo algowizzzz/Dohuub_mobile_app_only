@@ -10,7 +10,7 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
 import { useCatalogStore } from '../../store/catalogStore';
-import type { ApiVendorDetail } from '../../services/catalogApi';
+import type { ApiServiceListing, ApiVendorDetail } from '../../services/catalogApi';
 import { formatDurationMinutes } from '../../utils/duration';
 import EarnPointsCard from '../../components/ui/EarnPointsCard';
 import { styles } from './styles';
@@ -19,20 +19,58 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ServiceDetails'>;
 
 export default function ServiceDetailsScreen({ navigation, route }: Props) {
   const getVendor = useCatalogStore(state => state.getVendor);
+  const getService = useCatalogStore(state => state.getService);
   const [vendor, setVendor] = useState<ApiVendorDetail | null>(null);
+  const [service, setService] = useState<ApiServiceListing | null>(null);
+  const [heroBroken, setHeroBroken] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
     setError(null);
-    getVendor(route.params.vendorId)
-      .then(setVendor)
+    setHeroBroken(false);
+    Promise.all([
+      getVendor(route.params.vendorId),
+      getService(route.params.serviceId).catch(() => null),
+    ])
+      .then(([vendorDetail, serviceDetail]) => {
+        setVendor(vendorDetail);
+        const nested = vendorDetail.services.find(item => item.id === route.params.serviceId);
+        // Prefer the dedicated service payload — it always includes `image`.
+        if (serviceDetail) {
+          setService(serviceDetail);
+        } else if (nested) {
+          setService({
+            ...nested,
+            serviceGapInMinutes: 0,
+            concurrentServices: 1,
+            isActive: true,
+            createdAt: '',
+            vendorCategory: {
+              id: nested.vendorCategory.id,
+              title: nested.vendorCategory.title,
+            },
+            vendor: {
+              id: vendorDetail.id,
+              businessName: vendorDetail.businessName,
+              city: vendorDetail.city,
+              state: vendorDetail.state,
+              ratingAverage: vendorDetail.ratingAverage,
+              ratingCount: vendorDetail.ratingCount,
+              status: vendorDetail.status,
+              poweredByDoHuub: vendorDetail.poweredByDoHuub,
+            },
+          });
+        } else {
+          setService(null);
+        }
+      })
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [route.params.vendorId]);
+  useEffect(load, [route.params.vendorId, route.params.serviceId]);
 
   if (loading) {
     return (
@@ -42,8 +80,6 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
       </MainScreenLayout>
     );
   }
-
-  const service = vendor?.services.find(item => item.id === route.params.serviceId);
 
   if (error || !vendor || !service) {
     return (
@@ -56,6 +92,7 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
 
   const serviceReviews = vendor.reviews;
   const price = service.discountedPrice ?? service.price;
+  const heroUri = service.image?.trim() || '';
 
   return (
     <MainScreenLayout edges={['top', 'bottom']}>
@@ -63,8 +100,13 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
-          {service.image ? (
-            <Image source={{ uri: service.image }} style={styles.heroImage} resizeMode="cover" />
+          {heroUri && !heroBroken ? (
+            <Image
+              source={{ uri: heroUri }}
+              style={styles.heroImage}
+              resizeMode="cover"
+              onError={() => setHeroBroken(true)}
+            />
           ) : (
             <View style={styles.heroFallback}>
               <Icon name="image-outline" size={40} color={colors.textFaint} />
@@ -93,9 +135,13 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
           activeOpacity={0.8}
           onPress={() => navigation.navigate('Vendor', { vendorId: vendor.id })}
         >
-          <View style={styles.vendorIconWrap}>
-            <Icon name="sparkles" size={18} color={colors.primary} />
-          </View>
+          {vendor.user.image ? (
+            <Image source={{ uri: vendor.user.image }} style={styles.vendorAvatar} />
+          ) : (
+            <View style={styles.vendorIconWrap}>
+              <Icon name="sparkles" size={18} color={colors.primary} />
+            </View>
+          )}
           <View style={styles.vendorInfo}>
             <Text style={styles.vendorName}>{vendor.businessName}</Text>
             <Text style={styles.vendorLocation}>

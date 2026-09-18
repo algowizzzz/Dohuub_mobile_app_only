@@ -28,10 +28,18 @@ export const styles = StyleSheet.create({
   },
   preview: {
     borderRadius: radius.xl,
-    padding: spacing.lg,
     marginBottom: spacing.lg,
     overflow: 'hidden',
     minHeight: 188,
+    backgroundColor: colors.primary,
+  },
+  previewFill: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  previewContent: {
+    padding: spacing.lg,
+    minHeight: 188,
+    justifyContent: 'space-between',
   },
   previewTop: {
     flexDirection: 'row',
@@ -158,31 +166,15 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.lg,
+    minHeight: 48,
     paddingVertical: 14,
     marginBottom: spacing.md,
     gap: 8,
-    overflow: 'hidden',
+    backgroundColor: colors.primary,
   },
   secureBarLabel: {
     fontFamily: fontFamily.medium,
     fontSize: 15,
-    color: colors.white,
-  },
-  saveButtonWrap: {
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-  },
-  saveButtonDisabled: {
-    opacity: 0.5,
-  },
-  saveButton: {
-    minHeight: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
     color: colors.white,
   },
 });

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Platform, View } from 'react-native';
+import { FlatList, Keyboard, Platform, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '../../navigation/types';
-import { colors } from '../../styles';
 import MainScreenLayout from '../../components/layout/MainScreenLayout';
 import LoadingState from '../../components/ui/LoadingState';
 import { useChatStore } from '../../store/chatStore';
@@ -17,6 +17,7 @@ import { styles } from './styles';
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
 export default function ChatDetailScreen({ navigation, route }: Props) {
+  const insets = useSafeAreaInsets();
   const getConversation = useChatStore(state => state.getConversation);
   const createConversation = useChatStore(state => state.createConversation);
   const sendMessageApi = useChatStore(state => state.sendMessage);
@@ -28,6 +29,7 @@ export default function ChatDetailScreen({ navigation, route }: Props) {
   const [draft, setDraft] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [initializing, setInitializing] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const listRef = useRef<FlatList>(null);
   const isMounted = useRef(true);
 
@@ -101,19 +103,40 @@ export default function ChatDetailScreen({ navigation, route }: Props) {
     }
   }, [messages, isTyping, scrollToEnd]);
 
-  return (
-    <MainScreenLayout edges={['top', 'bottom']}>
+  useEffect(() => {
+    // Manual keyboard offset is more reliable than KeyboardAvoidingView for
+    // chat composers on iOS (KAV often leaves the input behind the keyboard).
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
+    const showSub = Keyboard.addListener(showEvent, event => {
+      // Android already resizes the window (adjustResize) — don't double-pad.
+      if (Platform.OS === 'ios') {
+        setKeyboardHeight(event.endCoordinates.height);
+      }
+      scrollToEnd(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [scrollToEnd]);
+
+  const composerPadBottom =
+    keyboardHeight > 0 ? keyboardHeight : Math.max(insets.bottom, 8);
+
+  return (
+    <MainScreenLayout edges={['top']}>
       <ChatDetailHeader onBack={() => navigation.goBack()} />
 
       {initializing ? (
         <LoadingState />
       ) : (
-        <KeyboardAvoidingView
-          style={styles.flex}
-          behavior="padding"
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
-        >
+        <View style={styles.flex}>
           <FlatList
             ref={listRef}
             style={styles.list}
@@ -123,15 +146,16 @@ export default function ChatDetailScreen({ navigation, route }: Props) {
             renderItem={({ item }) => <MessageBubble message={item} />}
             ListFooterComponent={isTyping ? <TypingIndicator /> : null}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
             onContentSizeChange={() => scrollToEnd(false)}
             initialNumToRender={20}
             removeClippedSubviews={Platform.OS === 'android'}
           />
 
-          <View style={styles.inputWrap}>
+          <View style={[styles.inputWrap, { paddingBottom: composerPadBottom }]}>
             <ChatInputBar value={draft} onChangeText={setDraft} onSend={() => sendMessage(draft)} />
           </View>
-        </KeyboardAvoidingView>
+        </View>
       )}
     </MainScreenLayout>
   );

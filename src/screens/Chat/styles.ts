@@ -12,7 +12,7 @@ export const styles = StyleSheet.create({
     paddingTop: spacing.xs,
   },
   ctaBlock: {
-    width: '100%',
+    // width: '100%',
     marginTop: spacing.sm,
     marginBottom: spacing.lg,
   },

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -9,6 +9,7 @@ import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../styles';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import { useServiceLocationStore } from '../../../store/serviceLocationStore';
+import { useAuthStore } from '../../../store/authStore';
 import { useCurrentLocation } from '../../../hooks/useCurrentLocation';
 import { countryIsoFromCoords } from '../../../utils/geocode';
 import { styles } from './styles';
@@ -21,11 +22,38 @@ export default function EnableLocationScreen({ navigation }: Props) {
   const setCountryIso = useServiceLocationStore(state => state.setCountryIso);
   const [requesting, setRequesting] = useState(false);
 
+  useEffect(() => {
+    const user = useAuthStore.getState().user;
+    if (user?.hasCompletedOnboarding || user?.profileComplete) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main', params: { screen: 'Home' } }],
+        }),
+      );
+    }
+  }, [navigation]);
+
   const goNext = () => {
+    const user = useAuthStore.getState().user;
+    if (user?.hasCompletedOnboarding) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main', params: { screen: 'Home' } }],
+        }),
+      );
+      return;
+    }
+    const profileComplete = Boolean(user?.profileComplete);
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
-        routes: [{ name: 'CompleteProfile' }],
+        routes: [
+          profileComplete
+            ? { name: 'SignupReferral' }
+            : { name: 'CompleteProfile', params: { continueSetup: true } },
+        ],
       }),
     );
   };

@@ -37,7 +37,7 @@ export const authApi = {
   forgotPassword: (payload: { email: string }) =>
     post<{ sent: boolean }>('/auth/password/forgot', payload, { skipAuth: true }),
 
-  resetPassword: (payload: { token: string; newPassword: string }) =>
+  resetPassword: (payload: { token: string; email: string; newPassword: string }) =>
     post<void>('/auth/password/reset', payload, { skipAuth: true }),
 
   googleUrl: (redirectTo?: string) =>

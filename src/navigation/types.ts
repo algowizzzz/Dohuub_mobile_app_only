@@ -16,7 +16,7 @@ export type RootStackParamList = {
   SignupEmail: undefined;
   VerifyOtp: { email: string };
   EnableLocation: undefined;
-  CompleteProfile: undefined;
+  CompleteProfile: { continueSetup?: boolean } | undefined;
   SignupReferral: undefined;
   SignupAddresses: undefined;
   ForgotPassword: undefined;

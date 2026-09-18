@@ -1,37 +1,35 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Animated, {
-  cancelAnimation,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { colors } from '../../../styles';
 import { styles } from './TypingIndicator.styles';
 
 function Dot({ delay }: { delay: number }) {
-  const translateY = useSharedValue(0);
+  const translateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    translateY.value = withDelay(
-      delay,
-      withRepeat(withSequence(withTiming(-4, { duration: 300 }), withTiming(0, { duration: 300 })), -1, false),
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(translateY, {
+          toValue: -4,
+          duration: 300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
     );
-
-    return () => {
-      cancelAnimation(translateY);
-    };
+    loop.start();
+    return () => loop.stop();
   }, [delay, translateY]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  return <Animated.View style={[styles.dot, animatedStyle]} />;
+  return <Animated.View style={[styles.dot, { transform: [{ translateY }] }]} />;
 }
 
 export default function TypingIndicator() {
