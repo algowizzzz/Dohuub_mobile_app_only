@@ -136,7 +136,16 @@ export default function HomeScreen() {
               <ServiceCard
                 key={category.id}
                 category={category}
-                onPress={() => navigation.navigate('Services', { categoryId: category.id })}
+                onPress={() => {
+                  const title = String(category.title || '').toLowerCase();
+                  if (title.includes('groc') || title.includes('food')) {
+                    navigation.navigate('CommerceChoice', { categoryId: category.id, mode: 'groceries' });
+                  } else if (title.includes('beauty')) {
+                    navigation.navigate('CommerceChoice', { categoryId: category.id, mode: 'beauty' });
+                  } else {
+                    navigation.navigate('Services', { categoryId: category.id });
+                  }
+                }}
               />
             ))}
           </View>

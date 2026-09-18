@@ -28,9 +28,18 @@ export const styles = StyleSheet.create({
     paddingRight: spacing.md,
     paddingVertical: spacing.xs,
   },
+  titleBlock: {
+    flex: 1,
+    minWidth: 0,
+  },
   title: {
     fontFamily: fontFamily.semiBold,
     fontSize: 16,
     color: colors.text,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 });

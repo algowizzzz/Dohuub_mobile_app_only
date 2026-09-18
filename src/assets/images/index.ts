@@ -15,3 +15,6 @@ export const categoryBeauty = require('./categories/beauty.png');
 export const categoryGroceries = require('./categories/groceries.png');
 export const categoryRentals = require('./categories/rentals.png');
 export const categoryCaregiving = require('./categories/caregiving.png');
+
+export const commerceFood = require('./commerce/food.png');
+export const commerceGrocery = require('./commerce/grocery.png');

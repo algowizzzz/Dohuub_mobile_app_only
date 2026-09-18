@@ -6,6 +6,7 @@ import { styles } from './SubScreenHeader.styles';
 
 type Props = {
   title: string;
+  subtitle?: string;
   onBack: () => void;
   /** When true, header applies top safe-area itself (use inside Modals). */
   includeTopInset?: boolean;
@@ -14,6 +15,7 @@ type Props = {
 
 export default function SubScreenHeader({
   title,
+  subtitle,
   onBack,
   includeTopInset = false,
   topInset = 0,
@@ -29,9 +31,16 @@ export default function SubScreenHeader({
         <Icon name="chevron-back" size={26} color={colors.text} />
       </TouchableOpacity>
 
-      <Text style={styles.title} numberOfLines={1}>
-        {title}
-      </Text>
+      <View style={styles.titleBlock}>
+        <Text style={styles.title} numberOfLines={1}>
+          {title}
+        </Text>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
     </View>
   );
 }

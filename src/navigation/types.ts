@@ -23,6 +23,12 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList>;
   ChatDetail: { conversationId?: string; initialMessage?: string } | undefined;
   Services: { categoryId: string };
+  CommerceChoice: { categoryId?: string; mode?: 'groceries' | 'beauty' } | undefined;
+  CommerceStores: { kind: 'food' | 'grocery' | 'beauty' };
+  CommerceMenu: { vendorId: string; kind: 'food' | 'grocery' | 'beauty' };
+  CommerceCheckout: { kind?: 'food' | 'grocery' | 'beauty' } | undefined;
+  OrderPayment: { orderId: string };
+  OrderDetail: { orderId: string };
   VendorStore: { vendorId: string; categoryId?: string };
   Vendor: { vendorId: string };
   VendorReviews: { vendorId: string };

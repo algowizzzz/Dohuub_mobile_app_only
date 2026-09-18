@@ -37,6 +37,12 @@ import PointsHistoryScreen from '../screens/PointsHistory';
 import EditProfileScreen from '../screens/EditProfile';
 import BookingDetailScreen from '../screens/BookingDetail';
 import LeaveReviewScreen from '../screens/LeaveReview';
+import CommerceChoiceScreen from '../screens/Commerce/CommerceChoice';
+import CommerceStoresScreen from '../screens/Commerce/CommerceStores';
+import CommerceMenuScreen from '../screens/Commerce/CommerceMenu';
+import CommerceCheckoutScreen from '../screens/Commerce/CommerceCheckout';
+import OrderPaymentScreen from '../screens/Commerce/OrderPayment';
+import OrderDetailScreen from '../screens/Commerce/OrderDetail';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -62,6 +68,12 @@ export default function RootNavigator() {
       <Stack.Screen name="Main" component={BottomTabNavigator} options={mainAppScreenOptions} />
       <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="Services" component={ServicesScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="CommerceChoice" component={CommerceChoiceScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="CommerceStores" component={CommerceStoresScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="CommerceMenu" component={CommerceMenuScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="CommerceCheckout" component={CommerceCheckoutScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="OrderPayment" component={OrderPaymentScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorStore" component={VendorStoreScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="Vendor" component={VendorScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorReviews" component={VendorReviewsScreen} options={mainAppScreenOptions} />
