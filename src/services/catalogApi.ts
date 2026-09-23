@@ -35,6 +35,40 @@ export type ApiServiceListing = {
     status: string;
     poweredByDoHuub: boolean;
   };
+  /**
+   * The branch that serves this listing. Address, hours and rating belong to
+   * the store, not the account — two locations of one business differ here.
+   */
+  store?: {
+    id: string;
+    name: string;
+    kind?: ApiStoreKind | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    openingHours?: ApiOpeningHours;
+    deliveryFee?: number | null;
+    deliveryMinutesMin?: number | null;
+    deliveryMinutesMax?: number | null;
+    ratingAverage?: number;
+    ratingCount?: number;
+    isActive?: boolean;
+  };
+
+  /** Split descriptions: short on cards, long on the detail screen. */
+  shortDescription?: string | null;
+  longDescription?: string | null;
+  /** Extra photos beside `image`. */
+  gallery?: string[];
+  pricingType?: 'fixed' | 'hourly';
+
+  /** Category-specific rows; only the one matching the store's kind is set. */
+  tradeDetail?: ApiTradeDetail | null;
+  beautyDetail?: ApiTradeDetail | null;
+  rentalDetail?: ApiRentalDetail | null;
+  companionDetail?: ApiCompanionDetail | null;
 };
 
 export type ApiOpeningHours = Record<
@@ -84,6 +118,16 @@ export type ApiVendorDetail = {
   user: { id: string; fullName: string; image: string | null; vendorCategoryIds: string[] };
   services: ApiVendorService[];
   reviews: ApiVendorReview[];
+  /** Other locations of the same business, when the API supplies them. */
+  stores?: Array<{
+    id: string;
+    name: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    ratingAverage?: number;
+    ratingCount?: number;
+  }>;
 };
 
 export type ServiceListParams = {
@@ -212,4 +256,199 @@ export const vendorsApi = {
 
   get: (id: string) =>
     get<{ vendor: ApiVendorDetail }>(`/vendors/${id}`, { skipAuth: true }).then(r => r.vendor),
+};
+
+/** What a store sells; decides which extra fields its listings carry. */
+export type ApiStoreKind =
+  | 'cleaning' | 'handyman' | 'grocery' | 'food'
+  | 'beauty_service' | 'beauty_product' | 'rental' | 'companionship';
+
+/** Extra fields a rental listing carries. */
+export type ApiRentalDetail = {
+  region: string;
+  propertyType: string;
+  bedrooms: number;
+  bathrooms: number;
+  maxGuests: number;
+  totalArea: number;
+  totalAreaUnit: string;
+  pricePerNight: number;
+  amenities: string[];
+  houseRules?: string | null;
+  cleaningFee?: number | null;
+  serviceFee?: number | null;
+};
+
+/** Extra fields a companion profile carries. */
+export type ApiCompanionDetail = {
+  yearsOfExperience: number;
+  about?: string | null;
+  certifications: string[];
+  specialties: string[];
+  supportTypes: string[];
+  languages: string[];
+  credentialImages: string[];
+};
+
+/** Extra fields a food item carries. */
+export type ApiFoodDetail = {
+  cuisines: string[];
+  portionSize?: string | null;
+};
+
+/** Ticked items on a cleaning, handyman or beauty service. */
+export type ApiTradeDetail = { whatsIncluded: string[] };
+
+/**
+ * One listing, whatever its category.
+ *
+ * The shared fields are always present; the rest arrive flattened according to
+ * the store's kind, so a rental has `bedrooms` and a food item has `cuisines`
+ * on the same object. `kind` says which to expect.
+ */
+export type ApiListing = {
+  id: string;
+  kind: ApiStoreKind | null;
+  listingKind: 'service' | 'product';
+  name: string;
+  shortDescription?: string | null;
+  longDescription?: string | null;
+  description?: string | null;
+  image?: string | null;
+  gallery: string[];
+  price: number;
+  discountedPrice?: number | null;
+  currency: string;
+  status: 'draft' | 'published';
+  pricingType?: 'fixed' | 'hourly';
+  storeId: string;
+  store?: { id: string; name: string; kind: ApiStoreKind | null; city?: string | null };
+} & Partial<ApiRentalDetail> &
+  Partial<ApiCompanionDetail> &
+  Partial<ApiFoodDetail> &
+  Partial<ApiTradeDetail>;
+
+/** One field in a category's listing form, as the API describes it. */
+export type ApiSchemaField = {
+  key: string;
+  label: string;
+  type: string;
+  target?: 'listing' | 'detail';
+  required?: boolean;
+  optional?: boolean;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  placeholder?: string;
+  hint?: string;
+  suffix?: string;
+  locked?: string;
+  lockedLabel?: string;
+  lockedNote?: string;
+  default?: unknown;
+  options?: Array<{ value: string; label: string }>;
+  optionsFrom?: string;
+  groups?: Array<{ label: string; options: string[] }>;
+  units?: Array<{ value: string; label: string }>;
+  unitKey?: string;
+  defaultUnit?: string;
+  maxItems?: number;
+  columns?: number;
+  allowCustom?: boolean;
+  customLabel?: string;
+  freeSolo?: boolean;
+  latKey?: string;
+  lngKey?: string;
+};
+
+export type ApiCategorySchema = {
+  kind: ApiStoreKind;
+  listingKind: 'service' | 'product';
+  label: string;
+  listingNoun: string;
+  createTitle: string;
+  createSubtitle: string;
+  sections: Array<{ title: string; fields: ApiSchemaField[] }>;
+  dynamicOptions?: Record<string, Array<{ value: string; label: string }>>;
+};
+
+/**
+ * `07 · Listings` — everything a store sells, whatever its category.
+ *
+ * `schema(kind)` returns that category's fields, so a screen can label and
+ * render them without knowing what a rental or a food item is.
+ */
+export const listingsApi = {
+  schemas: () =>
+    get<{ schemas: Record<string, ApiCategorySchema> }>('/listings/schemas', { skipAuth: true }).then(
+      r => r.schemas,
+    ),
+
+  schema: (kind: ApiStoreKind, storeId?: string) =>
+    get<{ schema: ApiCategorySchema }>(`/listings/schemas/${kind}`, {
+      skipAuth: true,
+      params: storeId ? { storeId } : undefined,
+    }).then(r => r.schema),
+
+  get: (id: string) =>
+    get<{ listing: ApiListing }>(`/listings/${id}`, { skipAuth: true }).then(r => r.listing),
+};
+
+/** One location of a business, as customers browse it. */
+export type ApiStoreListItem = {
+  id: string;
+  vendorId: string;
+  name: string;
+  /** What this branch sells; decides which fields its listings carry. */
+  kind?: ApiStoreKind | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  bio?: string | null;
+  image?: string | null;
+  openingHours?: ApiOpeningHours;
+  deliveryFee?: number | null;
+  deliveryMinutesMin?: number | null;
+  deliveryMinutesMax?: number | null;
+  ratingAverage?: number;
+  ratingCount?: number;
+  distanceKm?: number;
+  vendor?: {
+    id: string;
+    businessName: string;
+    status?: string;
+    poweredByDoHuub?: boolean;
+  };
+};
+
+/**
+ * `06 · Stores` — locations, the unit customers actually browse and book.
+ *
+ * Each branch lists separately, with its own address, hours, rating and
+ * distance, so "the Downtown one" is a thing a customer can pick.
+ */
+export const storesApi = {
+  list: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    city?: string;
+    state?: string;
+    vendorId?: string;
+    vendorCategoryId?: string;
+    lat?: number;
+    lng?: number;
+    radiusKm?: number;
+  }): Promise<Page<ApiStoreListItem>> => getPage<ApiStoreListItem>('/stores', { skipAuth: true, params }),
+
+  get: (id: string) =>
+    get<{ store: ApiStoreListItem }>(`/stores/${id}`, { skipAuth: true }).then(r => r.store),
+
+  /** Sibling branches of the same business. */
+  locations: (id: string) =>
+    get<{ stores: ApiStoreListItem[] }>(`/stores/${id}/locations`, { skipAuth: true }).then(
+      r => r.stores,
+    ),
 };

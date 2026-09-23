@@ -10,9 +10,18 @@ export type CommerceOrderStatus =
   | 'delivered'
   | 'cancelled';
 
+/**
+ * One storefront card. Since vendors can run several locations, this is a
+ * single branch: `id` is a store id, and `vendorId` names the business it
+ * belongs to. `businessName` is kept as an alias of `name` so screens written
+ * before multi-store keep rendering the right label.
+ */
 export type ApiCommerceStore = {
   id: string;
+  vendorId?: string;
+  name?: string;
   businessName: string;
+  isDefault?: boolean;
   address?: string | null;
   city?: string | null;
   state?: string | null;
@@ -30,6 +39,17 @@ export type ApiCommerceStore = {
 };
 
 export type ApiProduct = {
+  /** The branch that stocks this item. */
+  storeId?: string;
+  /** Shown on product cards. */
+  shortDescription?: string | null;
+  /** Extra photos beside `image`. */
+  gallery?: string[];
+  /** Numeric half of the quantity; `unitLabel` holds the unit. */
+  quantityAmount?: number | null;
+  status?: 'draft' | 'published';
+  /** Set for food items only: cuisines and portion size. */
+  foodDetail?: { cuisines: string[]; portionSize?: string | null } | null;
   id: string;
   vendorId: string;
   kind: ProductKind;
@@ -59,6 +79,19 @@ export type ApiCartItem = {
 export type ApiCart = {
   id: string;
   vendorId: string;
+  /** A cart holds items from exactly one branch. */
+  storeId?: string;
+  store?: {
+    id: string;
+    name: string;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    image?: string | null;
+    deliveryFee: number;
+    deliveryMinutesMin: number;
+    deliveryMinutesMax: number;
+  } | null;
   vendor: {
     id: string;
     businessName: string;
