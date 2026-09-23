@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { RootStackParamList } from './types';
 import BottomTabNavigator from './BottomTabNavigator';
+import { withAuthGuard } from './withAuthGuard';
 import { colors } from '../styles';
 import SplashScreen from '../screens/Splash';
 import OnboardingScreen from '../screens/Onboarding';
@@ -43,6 +44,29 @@ import CommerceMenuScreen from '../screens/Commerce/CommerceMenu';
 import CommerceCheckoutScreen from '../screens/Commerce/CommerceCheckout';
 import OrderPaymentScreen from '../screens/Commerce/OrderPayment';
 import OrderDetailScreen from '../screens/Commerce/OrderDetail';
+import RentalsListScreen from '../screens/Rentals/RentalsListScreen';
+import RentalDetailScreen from '../screens/Rentals/RentalDetailScreen';
+
+// Account-only screens. Entry points gate with requireAuth(); these guards
+// catch anything that slips past (deep links, missed buttons).
+const guarded = {
+  ChatDetail: withAuthGuard(ChatDetailScreen, 'Sign in to chat with the DoHuub assistant.'),
+  CommerceCheckout: withAuthGuard(CommerceCheckoutScreen, 'Sign in to check out your cart.'),
+  OrderPayment: withAuthGuard(OrderPaymentScreen, 'Sign in to pay for your order.'),
+  OrderDetail: withAuthGuard(OrderDetailScreen, 'Sign in to view your orders.'),
+  BookService: withAuthGuard(BookServiceScreen, 'Sign in to book this service.'),
+  Payment: withAuthGuard(PaymentScreen, 'Sign in to complete your payment.'),
+  PaymentMethods: withAuthGuard(PaymentMethodsScreen, 'Sign in to manage your payment methods.'),
+  EditPaymentCard: withAuthGuard(EditPaymentCardScreen, 'Sign in to manage your payment methods.'),
+  SavedAddresses: withAuthGuard(SavedAddressesScreen, 'Sign in to manage your saved addresses.'),
+  AddAddress: withAuthGuard(AddAddressScreen, 'Sign in to save an address.'),
+  ReferFriend: withAuthGuard(ReferFriendScreen, 'Sign in to refer friends and earn rewards.'),
+  RewardsWallet: withAuthGuard(RewardsWalletScreen, 'Sign in to earn and redeem reward points.'),
+  PointsHistory: withAuthGuard(PointsHistoryScreen, 'Sign in to see your points history.'),
+  EditProfile: withAuthGuard(EditProfileScreen, 'Sign in to edit your profile.'),
+  BookingDetail: withAuthGuard(BookingDetailScreen, 'Sign in to view your bookings.'),
+  LeaveReview: withAuthGuard(LeaveReviewScreen, 'Sign in to leave a review.'),
+};
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -66,34 +90,36 @@ export default function RootNavigator() {
       <Stack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="Main" component={BottomTabNavigator} options={mainAppScreenOptions} />
-      <Stack.Screen name="ChatDetail" component={ChatDetailScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="ChatDetail" component={guarded.ChatDetail} options={mainAppScreenOptions} />
       <Stack.Screen name="Services" component={ServicesScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="CommerceChoice" component={CommerceChoiceScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="CommerceStores" component={CommerceStoresScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="CommerceMenu" component={CommerceMenuScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="CommerceCheckout" component={CommerceCheckoutScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="OrderPayment" component={OrderPaymentScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="CommerceCheckout" component={guarded.CommerceCheckout} options={mainAppScreenOptions} />
+      <Stack.Screen name="OrderPayment" component={guarded.OrderPayment} options={mainAppScreenOptions} />
+      <Stack.Screen name="OrderDetail" component={guarded.OrderDetail} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorStore" component={VendorStoreScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="Vendor" component={VendorScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorReviews" component={VendorReviewsScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="RentalsList" component={RentalsListScreen} />
+      <Stack.Screen name="RentalDetail" component={RentalDetailScreen} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetailsScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="BookService" component={BookServiceScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="Payment" component={PaymentScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="BookService" component={guarded.BookService} options={mainAppScreenOptions} />
+      <Stack.Screen name="Payment" component={guarded.Payment} options={mainAppScreenOptions} />
       <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="AboutDoHuub" component={AboutDoHuubScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="EditPaymentCard" component={EditPaymentCardScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="AddAddress" component={AddAddressScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="ReferFriend" component={ReferFriendScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="RewardsWallet" component={RewardsWalletScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="PointsHistory" component={PointsHistoryScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="BookingDetail" component={BookingDetailScreen} options={mainAppScreenOptions} />
-      <Stack.Screen name="LeaveReview" component={LeaveReviewScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="PaymentMethods" component={guarded.PaymentMethods} options={mainAppScreenOptions} />
+      <Stack.Screen name="EditPaymentCard" component={guarded.EditPaymentCard} options={mainAppScreenOptions} />
+      <Stack.Screen name="SavedAddresses" component={guarded.SavedAddresses} options={mainAppScreenOptions} />
+      <Stack.Screen name="AddAddress" component={guarded.AddAddress} options={mainAppScreenOptions} />
+      <Stack.Screen name="ReferFriend" component={guarded.ReferFriend} options={mainAppScreenOptions} />
+      <Stack.Screen name="RewardsWallet" component={guarded.RewardsWallet} options={mainAppScreenOptions} />
+      <Stack.Screen name="PointsHistory" component={guarded.PointsHistory} options={mainAppScreenOptions} />
+      <Stack.Screen name="EditProfile" component={guarded.EditProfile} options={mainAppScreenOptions} />
+      <Stack.Screen name="BookingDetail" component={guarded.BookingDetail} options={mainAppScreenOptions} />
+      <Stack.Screen name="LeaveReview" component={guarded.LeaveReview} options={mainAppScreenOptions} />
     </Stack.Navigator>
   );
 }

@@ -32,6 +32,8 @@ export type RootStackParamList = {
   VendorStore: { vendorId: string; categoryId?: string };
   Vendor: { vendorId: string };
   VendorReviews: { vendorId: string };
+  RentalsList: undefined;
+  RentalDetail: { propertyId: string };
   ServiceDetails: { vendorId: string; serviceId: string };
   BookService: { vendorId: string; serviceId: string };
   Payment: { bookingId: string };

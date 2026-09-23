@@ -12,6 +12,7 @@ import { useServiceLocationStore } from '../../store/serviceLocationStore';
 import { useBookingStore } from '../../store/bookingStore';
 import { useRewardsStore } from '../../store/rewardsStore';
 import { useAuthStore } from '../../store/authStore';
+import { requireAuth, useIsSignedIn } from '../../hooks/useRequireAuth';
 import { vendorCategoriesApi, type ApiVendorCategory } from '../../services/catalogApi';
 import { ADDRESS_TYPE_META, formatAddressLine } from '../SavedAddresses/addresses';
 import HomeHeader from './components/HomeHeader';
@@ -33,6 +34,7 @@ export default function HomeScreen() {
   const loadBookings = useBookingStore(state => state.load);
   const rewardsBalance = useRewardsStore(state => state.balance);
   const loadRewardsBalance = useRewardsStore(state => state.loadBalance);
+  const signedIn = useIsSignedIn();
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -41,8 +43,8 @@ export default function HomeScreen() {
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   useEffect(() => {
-    useAuthStore.getState().completeOnboarding().catch(() => {});
-  }, []);
+    if (signedIn) useAuthStore.getState().completeOnboarding().catch(() => {});
+  }, [signedIn]);
 
   const loadCategories = () => {
     setCategoriesLoading(true);
@@ -62,12 +64,20 @@ export default function HomeScreen() {
       .finally(() => setCategoriesLoading(false));
   };
 
+  // Account data only — guests browse categories without a session.
+  const loadAccountData = useCallback(() => {
+    if (!signedIn) return Promise.resolve();
+    return Promise.all([
+      loadAddresses().catch(() => {}),
+      loadBookings().catch(() => {}),
+      loadRewardsBalance().catch(() => {}),
+    ]).then(() => {});
+  }, [signedIn, loadAddresses, loadBookings, loadRewardsBalance]);
+
   useFocusEffect(
     useCallback(() => {
-      loadAddresses().catch(() => {});
-      loadBookings().catch(() => {});
-      loadRewardsBalance().catch(() => {});
-    }, [loadAddresses, loadBookings, loadRewardsBalance]),
+      loadAccountData();
+    }, [loadAccountData]),
   );
 
   useEffect(() => {
@@ -76,12 +86,7 @@ export default function HomeScreen() {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    Promise.all([
-      loadAddresses().catch(() => {}),
-      loadBookings().catch(() => {}),
-      loadRewardsBalance().catch(() => {}),
-      loadCategories(),
-    ]).finally(() => setRefreshing(false));
+    Promise.all([loadAccountData(), loadCategories()]).finally(() => setRefreshing(false));
   };
 
   useEffect(() => {
@@ -91,14 +96,21 @@ export default function HomeScreen() {
     }
   }, [addresses, selectedAddressId, setSelectedAddressId]);
 
-  const selectedAddress =
-    addresses.find(address => address.id === selectedAddressId) ?? addresses[0];
+  const selectedAddress = signedIn
+    ? addresses.find(address => address.id === selectedAddressId) ?? addresses[0]
+    : undefined;
+
+  const openLocation = () => {
+    if (requireAuth('Sign in to save addresses and pick where you need service.')) {
+      setLocationModalVisible(true);
+    }
+  };
 
   return (
     <MainScreenLayout>
       <HomeHeader
         locationLabel={selectedAddress ? ADDRESS_TYPE_META[selectedAddress.type].label : 'Location'}
-        onLocationPress={() => setLocationModalVisible(true)}
+        onLocationPress={openLocation}
         onAvatarPress={() => {}}
         addressLine={selectedAddress ? formatAddressLine(selectedAddress) : undefined}
       />
@@ -116,12 +128,22 @@ export default function HomeScreen() {
           />
         }
       >
-        <HomeSearchBar onPress={() => navigation.navigate('ChatDetail', undefined)} />
+        <HomeSearchBar
+          onPress={() => {
+            if (requireAuth('Sign in to search with the DoHuub AI assistant.')) {
+              navigation.navigate('ChatDetail', undefined);
+            }
+          }}
+        />
 
         <RewardsWidget
-          points={rewardsBalance?.balance ?? 0}
-          weeklyStreak={rewardsBalance?.weeklyStreak ?? 0}
-          onPress={() => navigation.navigate('RewardsWallet')}
+          points={signedIn ? rewardsBalance?.balance ?? 0 : 0}
+          weeklyStreak={signedIn ? rewardsBalance?.weeklyStreak ?? 0 : 0}
+          onPress={() => {
+            if (requireAuth('Sign in to earn points on every booking and order.')) {
+              navigation.navigate('RewardsWallet');
+            }
+          }}
         />
 
         <Text style={styles.sectionTitle}>Available Services</Text>
@@ -142,6 +164,10 @@ export default function HomeScreen() {
                     navigation.navigate('CommerceChoice', { categoryId: category.id, mode: 'groceries' });
                   } else if (title.includes('beauty')) {
                     navigation.navigate('CommerceChoice', { categoryId: category.id, mode: 'beauty' });
+                  } else if (title.includes('rental')) {
+                    // Rentals have their own list: a property is browsed by
+                    // bedrooms and nightly rate, not by the vendor offering it.
+                    navigation.navigate('RentalsList');
                   } else {
                     navigation.navigate('Services', { categoryId: category.id });
                   }

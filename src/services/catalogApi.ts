@@ -132,6 +132,8 @@ export type ApiVendorDetail = {
 
 export type ServiceListParams = {
   vendorId?: string;
+  /** Browse one store category, e.g. every rental property. */
+  kind?: ApiStoreKind;
   vendorCategoryId?: string;
   city?: string;
   minPrice?: number;
