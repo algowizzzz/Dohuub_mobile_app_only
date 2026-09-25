@@ -10,7 +10,7 @@ import SubScreenHeader from '../../components/layout/SubScreenHeader';
 import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
 import { useCatalogStore } from '../../store/catalogStore';
-import type { ApiVendorDetail } from '../../services/catalogApi';
+import { isRentalListing, type ApiVendorDetail } from '../../services/catalogApi';
 import StoreServiceCard from './components/StoreServiceCard';
 import EarnPointsCard from '../../components/ui/EarnPointsCard';
 import { styles } from './styles';
@@ -38,7 +38,7 @@ export default function VendorStoreScreen({ navigation, route }: Props) {
   const offered = useMemo(() => {
     if (!vendor) return [];
     if (!categoryId) return vendor.services;
-    const filtered = vendor.services.filter(service => service.vendorCategory.id === categoryId);
+    const filtered = vendor.services.filter(service => service.vendorCategory?.id === categoryId);
     return filtered.length > 0 ? filtered : vendor.services;
   }, [vendor, categoryId]);
 
@@ -125,10 +125,12 @@ export default function VendorStoreScreen({ navigation, route }: Props) {
                     ratingAverage={vendor.ratingAverage}
                     ratingCount={vendor.ratingCount}
                     onPress={() =>
-                      navigation.navigate('ServiceDetails', {
-                        vendorId: vendor.id,
-                        serviceId: service.id,
-                      })
+                      isRentalListing(service)
+                        ? navigation.navigate('RentalDetail', { propertyId: service.id })
+                        : navigation.navigate('ServiceDetails', {
+                            vendorId: vendor.id,
+                            serviceId: service.id,
+                          })
                     }
                   />
                 ))}

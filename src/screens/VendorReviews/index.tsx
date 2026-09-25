@@ -54,6 +54,7 @@ export default function VendorReviewsScreen({ navigation, route }: Props) {
               id: item.id,
               stars: item.stars,
               comment: item.comment ?? null,
+              images: item.images ?? [],
               createdAt: item.createdAt,
               author: {
                 id: item.author?.id ?? '',

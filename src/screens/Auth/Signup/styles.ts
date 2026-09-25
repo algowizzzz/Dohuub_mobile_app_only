@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, fontFamily, radius, spacing } from '../../../styles';
+import { authSocialLabel, colors, fontFamily, radius, spacing } from '../../../styles';
 
 // Blue "Create Your Account" landing screen — matches WelcomeScreen's
 // full-primary-background pattern with a bigger logo and a terms/privacy
@@ -59,8 +59,7 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
   },
   googleLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
+    ...authSocialLabel,
     color: colors.text,
   },
   emailButton: {
@@ -74,8 +73,7 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.7)',
   },
   emailLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
+    ...authSocialLabel,
     color: colors.white,
   },
   errorText: {

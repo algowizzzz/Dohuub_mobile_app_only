@@ -60,6 +60,14 @@ export default function SplashScreen({ navigation }: Props) {
         return;
       }
 
+      // Guests picked "Continue as guest" before — take them straight back in.
+      if (useAuthStore.getState().isGuest) {
+        navigation.dispatch(
+          CommonActions.reset({ index: 0, routes: [{ name: 'Main', params: { screen: 'Home' } }] }),
+        );
+        return;
+      }
+
       const hasOnboarded = useAuthStore.getState().hasOnboarded;
       navigation.dispatch(
         CommonActions.reset({

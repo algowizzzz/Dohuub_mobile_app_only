@@ -75,14 +75,24 @@ http.interceptors.request.use(config => {
   return config;
 });
 
-let refreshing: Promise<string | null> | null = null;
+/**
+ * - `ok`: new tokens stored, retry the request.
+ * - `rejected`: the server refused the refresh token (400/401) — the session is dead.
+ * - `failed`: network error, timeout or 5xx — the session may still be fine, keep it.
+ */
+type RefreshResult =
+  | { kind: 'ok'; accessToken: string }
+  | { kind: 'rejected' }
+  | { kind: 'failed' };
 
-async function refreshSession(): Promise<string | null> {
+let refreshing: Promise<RefreshResult> | null = null;
+
+async function refreshSession(): Promise<RefreshResult> {
   if (refreshing) return refreshing;
 
-  refreshing = (async () => {
+  refreshing = (async (): Promise<RefreshResult> => {
     const { refreshToken } = useSessionStore.getState();
-    if (!refreshToken) return null;
+    if (!refreshToken) return { kind: 'rejected' };
 
     try {
       const response = await axios.post<Envelope<{ session: { accessToken: string; refreshToken: string; expiresAt: string } }>>(
@@ -90,12 +100,13 @@ async function refreshSession(): Promise<string | null> {
         { refreshToken },
       );
       const session = response.data?.data?.session;
-      if (!session) return null;
+      if (!session) return { kind: 'failed' };
 
       useSessionStore.getState().setSession(session);
-      return session.accessToken;
-    } catch {
-      return null;
+      return { kind: 'ok', accessToken: session.accessToken };
+    } catch (err) {
+      const refreshStatus = axios.isAxiosError(err) ? err.response?.status ?? 0 : 0;
+      return refreshStatus === 400 || refreshStatus === 401 ? { kind: 'rejected' } : { kind: 'failed' };
     } finally {
       refreshing = null;
     }
@@ -122,15 +133,34 @@ http.interceptors.response.use(
       !config.skipAuth &&
       !NO_REFRESH.some(path => url.includes(path));
 
+    let refreshFailed = false;
     if (isRefreshable) {
-      const newToken = await refreshSession();
-      if (newToken) {
+      const result = await refreshSession();
+      if (result.kind === 'ok') {
         config.__retried = true;
         config.headers = config.headers ?? {};
-        (config.headers as Record<string, string>).Authorization = `Bearer ${newToken}`;
+        (config.headers as Record<string, string>).Authorization = `Bearer ${result.accessToken}`;
         return http.request(config);
       }
-      useSessionStore.getState().clear();
+      if (result.kind === 'rejected') {
+        useSessionStore.getState().clear();
+      } else {
+        // Offline / server hiccup: keep the session and report a network
+        // error rather than a 401, so callers (e.g. restore) don't sign out.
+        refreshFailed = true;
+      }
+    }
+
+    if (refreshFailed) {
+      const apiError = new ApiError({
+        message: 'Could not reach DoHuub. Check your connection and try again.',
+        status: 0,
+        code: 'NETWORK_ERROR',
+        details: null,
+        requestId: body?.requestId ?? null,
+      });
+      apiLog.failure(config?.method ?? 'get', url, apiError);
+      return Promise.reject(apiError);
     }
 
     const axiosMessage = error.message || '';

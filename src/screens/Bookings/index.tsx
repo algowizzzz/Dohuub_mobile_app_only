@@ -129,6 +129,7 @@ export default function BookingsScreen() {
               return (
                 <TouchableOpacity
                   key={order.id}
+                  testID={`order-card-${order.id}`}
                   onPress={() => navigation.navigate('OrderDetail', { orderId: order.id })}
                   style={commerceStyles.orderCard}
                   activeOpacity={0.85}
@@ -138,10 +139,14 @@ export default function BookingsScreen() {
                   </View>
                   <View style={commerceStyles.orderBody}>
                     <Text style={commerceStyles.orderTitle}>
-                      {order.vendor?.businessName || 'Order'}
+                      {order.store?.name || order.vendor?.businessName || 'Order'}
                     </Text>
                     <Text style={commerceStyles.orderMeta}>
                       {order.reference} · ${Number(order.totalAmount).toFixed(2)}
+                      {order.checkoutId &&
+                      orders.filter(o => o.checkoutId === order.checkoutId).length > 1
+                        ? ' · Multi-store checkout'
+                        : ''}
                     </Text>
                     <View style={[commerceStyles.statusPill, { backgroundColor: status.bg }]}>
                       <Text style={[commerceStyles.statusPillText, { color: status.color }]}>

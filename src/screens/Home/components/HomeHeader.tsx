@@ -6,6 +6,8 @@ import { colors } from '../../../styles';
 import { useNotificationStore } from '../../../store/notificationStore';
 import { useAuthStore } from '../../../store/authStore';
 import NotificationsModal from '../../../components/ui/NotificationsModal';
+import CartButton from '../../../components/commerce/CartButton';
+import { requireAuth, useIsSignedIn } from '../../../hooks/useRequireAuth';
 import { styles } from './HomeHeader.styles';
 
 type Props = {
@@ -26,10 +28,15 @@ export default function HomeHeader({
   const loadNotifications = useNotificationStore(state => state.load);
   const hasUnreadNotifications = notifications.some(n => !n.readAt);
   const avatarUrl = useAuthStore(state => state.user?.avatarUrl);
+  const signedIn = useIsSignedIn();
 
   useEffect(() => {
-    loadNotifications().catch(() => {});
-  }, [loadNotifications]);
+    if (signedIn) loadNotifications().catch(() => {});
+  }, [loadNotifications, signedIn]);
+
+  const openNotifications = () => {
+    if (requireAuth('Sign in to see your notifications.')) setNotificationsVisible(true);
+  };
 
   return (
     <View style={styles.wrap}>
@@ -50,13 +57,14 @@ export default function HomeHeader({
         )}
 
         <View style={styles.actions}>
+          <CartButton style={styles.iconButton} />
           <TouchableOpacity
-            onPress={() => setNotificationsVisible(true)}
+            onPress={openNotifications}
             hitSlop={8}
             style={styles.iconButton}
           >
             <Icon name="notifications-outline" size={22} color={colors.text} />
-            {hasUnreadNotifications ? <View style={styles.badge} /> : null}
+            {signedIn && hasUnreadNotifications ? <View style={styles.badge} /> : null}
           </TouchableOpacity>
 
           <TouchableOpacity onPress={onAvatarPress} hitSlop={4}>

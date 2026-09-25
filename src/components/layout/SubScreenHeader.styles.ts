@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
   titleBlock: {
     flex: 1,
     minWidth: 0,
+    marginRight: spacing.xs,
   },
   title: {
     fontFamily: fontFamily.semiBold,
@@ -41,5 +42,13 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     marginTop: 2,
+  },
+  right: {
+    flexShrink: 0,
+    maxWidth: '46%',
+    marginLeft: spacing.xs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

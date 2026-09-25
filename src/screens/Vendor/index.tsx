@@ -11,7 +11,7 @@ import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
 import { useCatalogStore } from '../../store/catalogStore';
 import { reviewsApi, type StarBreakdown } from '../../services/reviewApi';
-import type { ApiVendorDetail } from '../../services/catalogApi';
+import { isRentalListing, type ApiVendorDetail } from '../../services/catalogApi';
 import { groupOpeningHours } from '../../utils/hours';
 import ServiceCard from './components/ServiceCard';
 import VendorInfoRow from './components/VendorInfoRow';
@@ -154,10 +154,12 @@ export default function VendorScreen({ navigation, route }: Props) {
                 ratingAverage={vendor.ratingAverage}
                 ratingCount={vendor.ratingCount}
                 onPress={() =>
-                  navigation.navigate('ServiceDetails', {
-                    vendorId: vendor.id,
-                    serviceId: service.id,
-                  })
+                  isRentalListing(service)
+                    ? navigation.navigate('RentalDetail', { propertyId: service.id })
+                    : navigation.navigate('ServiceDetails', {
+                        vendorId: vendor.id,
+                        serviceId: service.id,
+                      })
                 }
               />
             ))

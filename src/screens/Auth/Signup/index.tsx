@@ -2,25 +2,42 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { CommonActions } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
 import { colors } from '../../../styles';
 import ScreenStatusBar from '../../../components/layout/ScreenStatusBar';
 import GoogleIcon from '../../../components/ui/GoogleIcon';
+import AppleSignInButton from '../../../components/ui/AppleSignInButton';
 import { authLogo } from '../../../assets/images';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
-import { postAuthRoute } from '../../../navigation/postAuthRoute';
+import { navigateAfterAuth } from '../../../navigation/postAuthRoute';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Signup'>;
 
 export default function SignupScreen({ navigation }: Props) {
   const signInWithGoogle = useAuthStore(state => state.signInWithGoogle);
+  const signInWithApple = useAuthStore(state => state.signInWithApple);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleAppleSignUp = async () => {
+    if (appleBusy || googleBusy) return;
+    setAppleBusy(true);
+    setError(null);
+    try {
+      const customer = await signInWithApple();
+      navigateAfterAuth(navigation, customer);
+    } catch (err) {
+      if (err instanceof ApiError && err.isCancelled) return;
+      setError(ApiError.messageOf(err, 'Could not sign up with Apple.'));
+    } finally {
+      setAppleBusy(false);
+    }
+  };
 
   const handleGoogleSignUp = async () => {
     if (googleBusy) return;
@@ -28,7 +45,7 @@ export default function SignupScreen({ navigation }: Props) {
     setError(null);
     try {
       const customer = await signInWithGoogle();
-      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
+      navigateAfterAuth(navigation, customer);
     } catch (err) {
       if (err instanceof ApiError && err.isCancelled) return;
       setError(ApiError.messageOf(err, 'Could not sign up with Google.'));
@@ -54,6 +71,15 @@ export default function SignupScreen({ navigation }: Props) {
 
         <View style={styles.actions}>
           <TouchableOpacity
+            style={styles.emailButton}
+            onPress={() => navigation.navigate('SignupEmail')}
+            activeOpacity={0.85}
+          >
+            <Icon name="mail-outline" size={18} color={colors.white} />
+            <Text style={styles.emailLabel}>Sign Up with Email</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.googleButton, googleBusy && styles.googleButtonDisabled]}
             onPress={handleGoogleSignUp}
             disabled={googleBusy}
@@ -69,14 +95,7 @@ export default function SignupScreen({ navigation }: Props) {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.emailButton}
-            onPress={() => navigation.navigate('SignupEmail')}
-            activeOpacity={0.85}
-          >
-            <Icon name="mail-outline" size={18} color={colors.white} />
-            <Text style={styles.emailLabel}>Sign Up with Email</Text>
-          </TouchableOpacity>
+          <AppleSignInButton onPress={handleAppleSignUp} busy={appleBusy} variant="white" type="sign-up" />
 
           {error ? <ErrorBanner message={error} onDark /> : null}
         </View>

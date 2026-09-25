@@ -24,3 +24,17 @@ export const typography = {
   // PWA .btn: 16px/600
   button: { fontFamily: fontFamily.semiBold, fontSize: 16 },
 };
+
+/**
+ * Label size for the Google/email buttons that sit beside Sign in with Apple.
+ *
+ * Apple's ASAuthorizationAppleIDButton sizes its own label from its height and
+ * exposes no font prop on iOS (the library's `textStyle` is Android-only), so
+ * the other two buttons match it rather than the reverse. At the shared 52pt
+ * height Apple renders its label around 20pt; tune this one value against a
+ * simulator screenshot if the row still looks uneven.
+ */
+export const authSocialLabel = {
+  fontFamily: fontFamily.semiBold,
+  fontSize: 20,
+};

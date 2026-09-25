@@ -8,6 +8,7 @@ type Props = {
   title: string;
   subtitle?: string;
   onBack: () => void;
+  right?: React.ReactNode;
   /** When true, header applies top safe-area itself (use inside Modals). */
   includeTopInset?: boolean;
   topInset?: number;
@@ -17,6 +18,7 @@ export default function SubScreenHeader({
   title,
   subtitle,
   onBack,
+  right = null,
   includeTopInset = false,
   topInset = 0,
 }: Props) {
@@ -41,6 +43,8 @@ export default function SubScreenHeader({
           </Text>
         ) : null}
       </View>
+
+      {right ? <View style={styles.right}>{right}</View> : null}
     </View>
   );
 }

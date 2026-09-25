@@ -24,6 +24,13 @@ export const styles = StyleSheet.create({
       },
     }),
   },
+  cardSelected: {
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  selectIcon: {
+    marginRight: spacing.sm,
+  },
   cardDefault: {
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,

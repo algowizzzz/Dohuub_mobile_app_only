@@ -133,6 +133,12 @@ export const actionStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
+    // Matches cancelButton's 1pt border, which RN draws inside the box: without
+    // it the gradient fills the full 48pt at radius 12 while Cancel's white
+    // interior is 46pt at radius 11, so the two buttons look mismatched.
+    borderWidth: 1,
+    borderColor: 'transparent',
+    borderRadius: radius.lg,
   },
   confirmButtonDanger: {
     backgroundColor: colors.danger,
@@ -141,6 +147,8 @@ export const actionStyles = StyleSheet.create({
     fontFamily: fontFamily.semiBold,
     fontSize: 15,
     color: colors.white,
+    lineHeight: 20,
+    textAlign: 'center',
   },
   cancelButton: {
     minHeight: 48,

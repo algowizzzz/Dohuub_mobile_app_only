@@ -79,11 +79,12 @@ export type ApiCartItem = {
 export type ApiCart = {
   id: string;
   vendorId: string;
-  /** A cart holds items from exactly one branch. */
+  /** A cart holds items from exactly one branch; a customer can hold one cart per store. */
   storeId?: string;
   store?: {
     id: string;
     name: string;
+    kind?: string | null;
     address?: string | null;
     city?: string | null;
     state?: string | null;
@@ -106,9 +107,59 @@ export type ApiCart = {
   subtotal: number;
 };
 
+/** `GET /commerce/cart`: every store cart the customer holds. */
+export type ApiCartsResponse = {
+  carts?: ApiCart[];
+  itemCount?: number;
+  subtotal?: number;
+  /** Most recently updated cart (legacy clients). */
+  cart?: ApiCart | null;
+};
+
+export type ApiCheckoutPreviewGroup = {
+  storeId: string;
+  store?: ApiCart['store'];
+  vendor?: ApiCart['vendor'];
+  items: ApiCartItem[];
+  subtotal: number;
+  deliveryFee: number;
+  taxAmount: number;
+  total: number;
+};
+
+export type ApiCheckoutPreview = {
+  groups: ApiCheckoutPreviewGroup[];
+  subtotal: number;
+  deliveryFee: number;
+  taxAmount: number;
+  pointsDiscount: number;
+  pointsToRedeem: number;
+  totalAmount: number;
+  currency: string;
+  pointsYouEarn?: number;
+};
+
+export type CheckoutStatus = 'pending_payment' | 'paid' | 'failed' | 'cancelled';
+
+/** One payment covering one order per store. */
+export type ApiCheckout = {
+  id: string;
+  reference: string;
+  status: CheckoutStatus;
+  totalAmount: number;
+  pointsDiscount: number;
+  currency: string;
+  orders: ApiCommerceOrder[];
+  paymentStatus: string;
+  createdAt: string;
+};
+
 export type ApiCommerceOrder = {
   id: string;
   reference: string;
+  /** Set when the order was placed as part of a multi-store checkout. */
+  checkoutId?: string | null;
+  store?: { id: string; name: string; image?: string | null } | null;
   status: CommerceOrderStatus;
   paymentStatus: string;
   subtotal: number;
@@ -159,29 +210,34 @@ export const commerceApi = {
   listProducts: (params: Record<string, unknown>) =>
     getPage<ApiProduct>('/commerce/products', { params, skipAuth: true }),
 
-  getCart: () => get<{ cart: ApiCart | null }>('/commerce/cart'),
+  getCart: () => get<ApiCartsResponse>('/commerce/cart'),
 
-  upsertCartItem: (payload: { productId: string; quantity: number; replaceVendor?: boolean }) =>
-    put<{ cart: ApiCart | null }>('/commerce/cart/items', payload),
+  upsertCartItem: (payload: { productId: string; quantity: number }) =>
+    put<ApiCartsResponse>('/commerce/cart/items', payload),
 
-  clearCart: () => del<{ cleared: boolean }>('/commerce/cart'),
+  /** Clears one store's cart, or every cart when `storeId` is omitted. */
+  clearCart: (storeId?: string) =>
+    del<{ cleared: boolean }>('/commerce/cart', storeId ? { params: { storeId } } : undefined),
 
-  previewCheckout: (payload: { deliveryAddressId?: string; pointsToRedeem?: number } = {}) =>
-    post<{
-      cart: ApiCart;
-      deliveryFee: number;
-      taxAmount: number;
-      taxRate: number;
-      discountAmount: number;
-      subtotal: number;
-      totalAmount: number;
-      pointsToRedeem: number;
-      pointsYouEarn: number;
-      currency: string;
-    }>('/commerce/cart/checkout-preview', payload),
+  previewCheckout: (
+    payload: { deliveryAddressId?: string; pointsToRedeem?: number; storeIds?: string[] } = {},
+  ) => post<ApiCheckoutPreview>('/commerce/cart/checkout-preview', payload),
 
-  createOrder: (payload: { deliveryAddressId: string; pointsToRedeem?: number; notes?: string }) =>
-    post<{ order: ApiCommerceOrder }>('/commerce/orders', payload),
+  /** Creates one checkout with one order per store and clears those carts. */
+  createOrder: (payload: {
+    deliveryAddressId: string;
+    pointsToRedeem?: number;
+    notes?: string;
+    storeIds?: string[];
+  }) => post<{ checkout?: ApiCheckout; order: ApiCommerceOrder }>('/commerce/orders', payload),
+
+  payCheckout: (id: string, payload: { paymentMethodId?: string; confirmNow?: boolean } = {}) =>
+    post<{ checkout: ApiCheckout; clientSecret?: string }>(`/commerce/checkouts/${id}/pay`, payload),
+
+  getCheckout: (id: string) => get<{ checkout: ApiCheckout }>(`/commerce/checkouts/${id}`),
+
+  listMyCheckouts: (params?: Record<string, unknown>): Promise<Page<ApiCheckout>> =>
+    getPage('/commerce/checkouts', { params }),
 
   payOrder: (
     id: string,

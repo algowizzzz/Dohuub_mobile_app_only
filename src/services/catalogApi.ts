@@ -24,7 +24,8 @@ export type ApiServiceListing = {
   concurrentServices: number;
   isActive: boolean;
   createdAt: string;
-  vendorCategory: { id: string; title: string; image?: string | null };
+  /** Null on listings built from a store-kind form (rentals, food, …). */
+  vendorCategory: { id: string; title: string; image?: string | null } | null;
   vendor: {
     id: string;
     businessName: string;
@@ -34,6 +35,8 @@ export type ApiServiceListing = {
     ratingCount: number;
     status: string;
     poweredByDoHuub: boolean;
+    /** The account holder; `image` is their profile photo. */
+    user?: { image?: string | null } | null;
   };
   /**
    * The branch that serves this listing. Address, hours and rating belong to
@@ -55,6 +58,7 @@ export type ApiServiceListing = {
     ratingAverage?: number;
     ratingCount?: number;
     isActive?: boolean;
+    image?: string | null;
   };
 
   /** Split descriptions: short on cards, long on the detail screen. */
@@ -86,13 +90,23 @@ export type ApiVendorService = {
   currency: string;
   serviceTimeInMinutes: number;
   pointsPerDollar: number;
-  vendorCategory: { id: string; title: string };
+  /** Null on listings built from a store-kind form (rentals, food, …). */
+  vendorCategory: { id: string; title: string } | null;
+  /** The branch it belongs to; `kind` says which detail screen fits it. */
+  store?: { id: string; name: string; kind?: ApiStoreKind | null };
+  rentalDetail?: ApiRentalDetail | null;
 };
+
+/** A rental opens the property screen and its stay booking, not a slot booking. */
+export const isRentalListing = (s: { rentalDetail?: unknown; store?: { kind?: ApiStoreKind | null } | null }) =>
+  Boolean(s.rentalDetail) || s.store?.kind === 'rental';
 
 export type ApiVendorReview = {
   id: string;
   stars: number;
   comment: string | null;
+  /** Photos the customer attached (up to 5 URLs). */
+  images?: string[];
   createdAt: string;
   author: { id: string; fullName: string; image: string | null };
 };
@@ -134,6 +148,8 @@ export type ServiceListParams = {
   vendorId?: string;
   /** Browse one store category, e.g. every rental property. */
   kind?: ApiStoreKind;
+  /** With `kind: 'rental'`: only properties offered under this term. */
+  rentalTerm?: ApiRentalTerm;
   vendorCategoryId?: string;
   city?: string;
   minPrice?: number;
@@ -230,6 +246,16 @@ export const servicesApi = {
       skipAuth: true,
       params,
     }),
+
+  /**
+   * Fully-booked nights of a rental between two days (YYYY-MM-DD). A stay's
+   * checkout day is not a booked night, so it never appears here.
+   */
+  unavailableDates: (id: string, params: { from: string; to: string }) =>
+    get<{ dates: string[] }>(`/services/${id}/unavailable-dates`, {
+      skipAuth: true,
+      params,
+    }).then(r => r.dates ?? []),
 };
 
 export type ApiVendorListItem = {
@@ -265,6 +291,9 @@ export type ApiStoreKind =
   | 'cleaning' | 'handyman' | 'grocery' | 'food'
   | 'beauty_service' | 'beauty_product' | 'rental' | 'companionship';
 
+/** How a property may be rented (vendor form "Rental Type"). */
+export type ApiRentalTerm = 'short_term' | 'long_term' | 'commercial';
+
 /** Extra fields a rental listing carries. */
 export type ApiRentalDetail = {
   region: string;
@@ -275,10 +304,15 @@ export type ApiRentalDetail = {
   totalArea: number;
   totalAreaUnit: string;
   pricePerNight: number;
+  /** Optional long-stay rates (whole weeks / 30-night months); decimals may arrive as strings. */
+  pricePerWeek?: number | string | null;
+  pricePerMonth?: number | string | null;
   amenities: string[];
   houseRules?: string | null;
   cleaningFee?: number | null;
   serviceFee?: number | null;
+  /** Subset of short_term / long_term / commercial; older listings may have none. */
+  rentalTerms?: ApiRentalTerm[] | null;
 };
 
 /** Extra fields a companion profile carries. */

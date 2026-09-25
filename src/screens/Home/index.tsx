@@ -97,7 +97,9 @@ export default function HomeScreen() {
   }, [addresses, selectedAddressId, setSelectedAddressId]);
 
   const selectedAddress = signedIn
-    ? addresses.find(address => address.id === selectedAddressId) ?? addresses[0]
+    ? addresses.find(address => address.id === selectedAddressId) ??
+      addresses.find(address => address.isDefault) ??
+      addresses[0]
     : undefined;
 
   const openLocation = () => {
@@ -192,7 +194,7 @@ export default function HomeScreen() {
         }}
         onAddNew={() => {
           setLocationModalVisible(false);
-          navigation.navigate('AddAddress');
+          navigation.navigate('AddAddress', { select: true });
         }}
         onClose={() => setLocationModalVisible(false)}
       />

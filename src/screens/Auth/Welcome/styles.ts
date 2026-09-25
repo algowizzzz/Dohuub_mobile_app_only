@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, fontFamily, radius, spacing } from '../../../styles';
+import { authSocialLabel, colors, fontFamily, radius, spacing } from '../../../styles';
 
 // Ported from the PWA's BlueAuth.module.css (shared by Welcome/Signin) —
 // full var(--m-primary) background, centered 280px logo, tagline, stacked
@@ -70,8 +70,7 @@ export const styles = StyleSheet.create({
     opacity: 0.7,
   },
   googleLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
+    ...authSocialLabel,
     color: colors.text,
   },
   // PWA .btnOutline: min-height 52, radius 12, 1.5px rgba(255,255,255,.7) border
@@ -86,9 +85,19 @@ export const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.7)',
   },
   emailLabel: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 16,
+    ...authSocialLabel,
     color: colors.white,
+  },
+  guestButton: {
+    alignSelf: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  guestLabel: {
+    fontFamily: fontFamily.semiBold,
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.9)',
+    textDecorationLine: 'underline',
   },
   // PWA .error: rgba(239,68,68,.35) bg, white text, radius 10
   errorText: {

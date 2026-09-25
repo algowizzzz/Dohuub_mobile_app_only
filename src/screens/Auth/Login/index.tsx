@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommonActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
@@ -13,7 +12,9 @@ import PrimaryButton from '../../../components/ui/PrimaryButton';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
-import { postAuthRoute } from '../../../navigation/postAuthRoute';
+import AppleSignInButton from '../../../components/ui/AppleSignInButton';
+import { isAppleAuthSupported } from '../../../services/appleAuth';
+import { navigateAfterAuth } from '../../../navigation/postAuthRoute';
 import AuthFooterLinks from './components/AuthFooterLinks';
 import { styles } from './styles';
 
@@ -21,12 +22,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
   const signIn = useAuthStore(state => state.signIn);
+  const signInWithApple = useAuthStore(state => state.signInWithApple);
+  const [appleBusy, setAppleBusy] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting;
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !submitting && !appleBusy;
 
   const handleSignIn = async () => {
     if (!canSubmit) return;
@@ -34,11 +37,26 @@ export default function LoginScreen({ navigation }: Props) {
     setError(null);
     try {
       const customer = await signIn({ email: email.trim(), password });
-      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
+      navigateAfterAuth(navigation, customer);
     } catch (err) {
       setError(ApiError.messageOf(err, 'Could not sign in. Please try again.'));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    if (appleBusy || submitting) return;
+    setAppleBusy(true);
+    setError(null);
+    try {
+      const customer = await signInWithApple();
+      navigateAfterAuth(navigation, customer);
+    } catch (err) {
+      if (err instanceof ApiError && err.isCancelled) return;
+      setError(ApiError.messageOf(err, 'Could not sign in with Apple.'));
+    } finally {
+      setAppleBusy(false);
     }
   };
 
@@ -104,6 +122,22 @@ export default function LoginScreen({ navigation }: Props) {
               loading={submitting}
               style={styles.signInButton}
             />
+
+            {isAppleAuthSupported ? (
+              <>
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+                <AppleSignInButton
+                  onPress={handleAppleSignIn}
+                  busy={appleBusy}
+                  variant="black"
+                  testID="apple-signin-login"
+                />
+              </>
+            ) : null}
           </View>
         </ScrollView>
 

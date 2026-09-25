@@ -13,6 +13,8 @@ import { useCatalogStore } from '../../store/catalogStore';
 import type { ApiServiceListing, ApiVendorDetail } from '../../services/catalogApi';
 import { formatDurationMinutes } from '../../utils/duration';
 import EarnPointsCard from '../../components/ui/EarnPointsCard';
+import { requireAuth } from '../../hooks/useRequireAuth';
+import WishlistHeart from '../../components/commerce/WishlistHeart';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ServiceDetails'>;
@@ -47,10 +49,9 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
             concurrentServices: 1,
             isActive: true,
             createdAt: '',
-            vendorCategory: {
-              id: nested.vendorCategory.id,
-              title: nested.vendorCategory.title,
-            },
+            vendorCategory: nested.vendorCategory
+              ? { id: nested.vendorCategory.id, title: nested.vendorCategory.title }
+              : null,
             vendor: {
               id: vendorDetail.id,
               businessName: vendorDetail.businessName,
@@ -96,7 +97,11 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
 
   return (
     <MainScreenLayout edges={['top', 'bottom']}>
-      <SubScreenHeader title="Service Details" onBack={() => navigation.goBack()} />
+      <SubScreenHeader
+        title="Service Details"
+        onBack={() => navigation.goBack()}
+        right={<WishlistHeart serviceId={route.params.serviceId} variant="plain" size={22} />}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
@@ -182,9 +187,11 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
 
         <PrimaryButton
           label="Book Service"
-          onPress={() =>
-            navigation.navigate('BookService', { vendorId: vendor.id, serviceId: service.id })
-          }
+          onPress={() => {
+            if (requireAuth('Sign in to book this service.')) {
+              navigation.navigate('BookService', { vendorId: vendor.id, serviceId: service.id });
+            }
+          }}
           style={styles.bookButton}
         />
 

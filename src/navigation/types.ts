@@ -27,13 +27,25 @@ export type RootStackParamList = {
   CommerceStores: { kind: 'food' | 'grocery' | 'beauty' };
   CommerceMenu: { vendorId: string; kind: 'food' | 'grocery' | 'beauty' };
   CommerceCheckout: { kind?: 'food' | 'grocery' | 'beauty' } | undefined;
-  OrderPayment: { orderId: string };
+  /** Pays a multi-store checkout (`checkoutId`) or a single legacy order (`orderId`). */
+  OrderPayment: { orderId?: string; checkoutId?: string };
   OrderDetail: { orderId: string };
+  ShoppingList: undefined;
   VendorStore: { vendorId: string; categoryId?: string };
   Vendor: { vendorId: string };
   VendorReviews: { vendorId: string };
   RentalsList: undefined;
   RentalDetail: { propertyId: string };
+  RentalDates: { propertyId: string };
+  RentalStayDetails: { propertyId: string; checkIn: string; checkOut: string };
+  RentalConfirm: {
+    propertyId: string;
+    checkIn: string;
+    checkOut: string;
+    adults: number;
+    children: number;
+    specialRequests?: string;
+  };
   ServiceDetails: { vendorId: string; serviceId: string };
   BookService: { vendorId: string; serviceId: string };
   Payment: { bookingId: string };
@@ -43,8 +55,10 @@ export type RootStackParamList = {
   AboutDoHuub: undefined;
   PaymentMethods: undefined;
   EditPaymentCard: { cardId: string };
-  SavedAddresses: undefined;
-  AddAddress: { addressId?: string; type?: 'home' | 'work' | 'other' } | undefined;
+  /** `mode: 'select'` — opened from a booking/checkout flow: tapping a row picks it and goes back. */
+  SavedAddresses: { mode?: 'select' } | undefined;
+  /** `select: true` — a new address becomes the selected one and the screen returns to the flow. */
+  AddAddress: { addressId?: string; type?: 'home' | 'work' | 'other'; select?: boolean } | undefined;
   ReferFriend: undefined;
   RewardsWallet: undefined;
   PointsHistory: undefined;

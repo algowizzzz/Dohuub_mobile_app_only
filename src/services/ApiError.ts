@@ -153,7 +153,7 @@ export class ApiError extends Error {
   }
 
   get isCancelled(): boolean {
-    return this.code === 'GOOGLE_CANCELLED';
+    return this.code === 'GOOGLE_CANCELLED' || this.code === 'APPLE_CANCELLED';
   }
 
   static messageOf(err: unknown, fallback = 'Something went wrong. Please try again.'): string {

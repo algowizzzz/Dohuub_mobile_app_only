@@ -54,7 +54,9 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
       <SubScreenHeader title="Order detail" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>{order.vendor?.businessName || 'Order'}</Text>
+          <Text style={styles.cardTitle}>
+            {order.store?.name || order.vendor?.businessName || 'Order'}
+          </Text>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Reference</Text>
             <Text style={styles.summaryValue}>{order.reference}</Text>
@@ -107,7 +109,13 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
         {order.paymentStatus !== 'paid' && order.status === 'pending_payment' ? (
           <PrimaryButton
             label="Pay now"
-            onPress={() => navigation.navigate('OrderPayment', { orderId: order.id })}
+            testID="order-pay-now"
+            onPress={() =>
+              navigation.navigate(
+                'OrderPayment',
+                order.checkoutId ? { checkoutId: order.checkoutId } : { orderId: order.id },
+              )
+            }
           />
         ) : null}
       </ScrollView>

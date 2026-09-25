@@ -1,7 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import GoogleIcon from './GoogleIcon';
-import { colors, fontFamily } from '../../styles';
+import { authSocialLabel, colors } from '../../styles';
 
 type Props = {
   onPress: () => void;
@@ -39,8 +39,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   label: {
-    fontFamily: fontFamily.semiBold,
-    fontSize: 15,
+    ...authSocialLabel,
     color: colors.text,
   },
 });

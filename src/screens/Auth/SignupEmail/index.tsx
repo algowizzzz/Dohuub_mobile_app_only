@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommonActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
@@ -13,10 +12,11 @@ import PhoneField from '../../../components/ui/PhoneField';
 import PasswordField from '../../../components/ui/PasswordField';
 import PrimaryButton from '../../../components/ui/PrimaryButton';
 import GoogleSignInButton from '../../../components/ui/GoogleSignInButton';
+import AppleSignInButton from '../../../components/ui/AppleSignInButton';
 import { useAuthStore } from '../../../store/authStore';
 import { ApiError } from '../../../services/ApiError';
 import ErrorBanner from '../../../components/ui/ErrorBanner';
-import { postAuthRoute } from '../../../navigation/postAuthRoute';
+import { navigateAfterAuth } from '../../../navigation/postAuthRoute';
 import SignupFooterLinks from './components/SignupFooterLinks';
 import { styles } from './styles';
 
@@ -25,6 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'SignupEmail'>;
 export default function SignupEmailScreen({ navigation }: Props) {
   const signUp = useAuthStore(state => state.signUp);
   const signInWithGoogle = useAuthStore(state => state.signInWithGoogle);
+  const signInWithApple = useAuthStore(state => state.signInWithApple);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +34,7 @@ export default function SignupEmailScreen({ navigation }: Props) {
   const [referralCode, setReferralCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [appleBusy, setAppleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit =
@@ -64,12 +66,27 @@ export default function SignupEmailScreen({ navigation }: Props) {
     setError(null);
     try {
       const customer = await signInWithGoogle(referralCode.trim() || undefined);
-      navigation.dispatch(CommonActions.reset({ index: 0, routes: [postAuthRoute(customer)] }));
+      navigateAfterAuth(navigation, customer);
     } catch (err) {
       if (err instanceof ApiError && err.isCancelled) return;
       setError(ApiError.messageOf(err, 'Could not sign up with Google.'));
     } finally {
       setGoogleBusy(false);
+    }
+  };
+
+  const handleAppleSignUp = async () => {
+    if (appleBusy || googleBusy) return;
+    setAppleBusy(true);
+    setError(null);
+    try {
+      const customer = await signInWithApple(referralCode.trim() || undefined);
+      navigateAfterAuth(navigation, customer);
+    } catch (err) {
+      if (err instanceof ApiError && err.isCancelled) return;
+      setError(ApiError.messageOf(err, 'Could not sign up with Apple.'));
+    } finally {
+      setAppleBusy(false);
     }
   };
 
@@ -154,7 +171,10 @@ export default function SignupEmailScreen({ navigation }: Props) {
               <View style={styles.dividerLine} />
             </View>
 
-            <GoogleSignInButton onPress={handleGoogleSignUp} busy={googleBusy} label="Continue with Google" />
+            <View style={styles.socialButtons}>
+              <GoogleSignInButton onPress={handleGoogleSignUp} busy={googleBusy} label="Continue with Google" />
+              <AppleSignInButton onPress={handleAppleSignUp} busy={appleBusy} variant="black" type="continue" />
+            </View>
           </View>
         </ScrollView>
 

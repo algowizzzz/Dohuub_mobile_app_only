@@ -48,12 +48,26 @@ export const styles = StyleSheet.create({
   iconWrapDanger: {
     backgroundColor: '#FEE2E2',
   },
+  iconWrapPrimary: {
+    backgroundColor: '#E0EDFB',
+  },
   message: {
     fontFamily: fontFamily.regular,
     fontSize: 14,
     color: colors.textMuted,
     lineHeight: 20,
     textAlign: 'center',
+  },
+  errorText: {
+    fontFamily: fontFamily.regular,
+    fontSize: 13,
+    color: colors.danger,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   actions: {
     flexDirection: 'row',
@@ -87,6 +101,9 @@ export const styles = StyleSheet.create({
   },
   confirmButtonDanger: {
     backgroundColor: colors.danger,
+  },
+  confirmButtonPrimary: {
+    backgroundColor: colors.primary,
   },
   confirmLabel: {
     fontFamily: fontFamily.semiBold,

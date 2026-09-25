@@ -14,8 +14,10 @@ import type { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../styles';
 import MainScreenLayout from '../../components/layout/MainScreenLayout';
 import SubScreenHeader from '../../components/layout/SubScreenHeader';
+import HeaderHomeButton from '../../components/layout/HeaderHomeButton';
 import PrimaryButton from '../../components/ui/PrimaryButton';
 import { useAddressStore } from '../../store/addressStore';
+import { useServiceLocationStore } from '../../store/serviceLocationStore';
 import { useCurrentLocation } from '../../hooks/useCurrentLocation';
 import { ApiError } from '../../services/ApiError';
 import ErrorBanner from '../../components/ui/ErrorBanner';
@@ -31,6 +33,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'AddAddress'>;
 export default function AddAddressScreen({ navigation, route }: Props) {
   const addressId = route.params?.addressId;
   const presetType = route.params?.type;
+  const selectAfterSave = route.params?.select === true;
+  const setSelectedAddressId = useServiceLocationStore(s => s.setSelectedAddressId);
+  const setLastCoords = useServiceLocationStore(s => s.setLastCoords);
   const addresses = useAddressStore(state => state.addresses);
   const addAddress = useAddressStore(state => state.addAddress);
   const updateAddress = useAddressStore(state => state.updateAddress);
@@ -111,10 +116,31 @@ export default function AddAddressScreen({ navigation, route }: Props) {
     try {
       if (existing) {
         await updateAddress(existing.id, payload);
+        navigation.goBack();
       } else {
-        await addAddress(payload);
+        const created = await addAddress(payload);
+        if (selectAfterSave) {
+          // Opened from a booking / checkout flow: the new address is the one
+          // the customer wants to use, so pick it and go straight back to the
+          // flow — skipping the address picker if that's what opened us.
+          setSelectedAddressId(created.id);
+          if (created.latitude != null && created.longitude != null) {
+            setLastCoords({ lat: created.latitude, lng: created.longitude });
+          }
+          const { routes, index } = navigation.getState();
+          const previous = routes[index - 1];
+          const fromPicker =
+            previous?.name === 'SavedAddresses' &&
+            (previous.params as RootStackParamList['SavedAddresses'])?.mode === 'select';
+          if (fromPicker && index >= 2) {
+            navigation.pop(2);
+          } else {
+            navigation.goBack();
+          }
+        } else {
+          navigation.goBack();
+        }
       }
-      navigation.goBack();
     } catch (error) {
       setSubmitError(ApiError.messageOf(error, 'Could not save this address.'));
     } finally {
@@ -127,6 +153,7 @@ export default function AddAddressScreen({ navigation, route }: Props) {
       <SubScreenHeader
         title={existing ? 'Edit Address' : 'Add Address'}
         onBack={() => navigation.goBack()}
+        right={<HeaderHomeButton testID="address-home-button" />}
       />
 
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
@@ -235,6 +262,7 @@ export default function AddAddressScreen({ navigation, route }: Props) {
             disabled={!canSave}
             loading={saving}
             style={styles.saveButton}
+            testID="address-save"
           />
         </ScrollView>
       </KeyboardAvoidingView>

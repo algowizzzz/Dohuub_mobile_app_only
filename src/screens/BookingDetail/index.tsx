@@ -12,7 +12,6 @@ import PrimaryButton from '../../components/ui/PrimaryButton';
 import ConfirmModal from '../../components/ui/ConfirmModal';
 import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
-import ErrorBanner from '../../components/ui/ErrorBanner';
 import { ApiError } from '../../services/ApiError';
 import { useBookingStore } from '../../store/bookingStore';
 import { useAddressStore } from '../../store/addressStore';
@@ -37,7 +36,7 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [cancelVisible, setCancelVisible] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -94,16 +93,17 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
       : '';
 
   const handleCancelConfirmed = async () => {
+    if (cancelling) return;
     setCancelling(true);
-    setActionError(null);
+    setCancelError(null);
     try {
       await cancelBooking(booking.id);
+      setCancelling(false);
       setCancelVisible(false);
       navigation.goBack();
     } catch (err) {
-      setCancelVisible(false);
-      setActionError(ApiError.messageOf(err, 'Could not cancel this booking.'));
-    } finally {
+      // Keep the dialog open with the reason so the customer can retry.
+      setCancelError(ApiError.messageOf(err, 'Could not cancel this booking.'));
       setCancelling(false);
     }
   };
@@ -228,10 +228,9 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
             />
           ) : null}
 
-          {actionError ? <ErrorBanner message={actionError} /> : null}
-
           {cancellable ? (
             <TouchableOpacity
+              testID="booking-cancel"
               style={styles.cancelButton}
               onPress={() => setCancelVisible(true)}
               activeOpacity={0.7}
@@ -245,10 +244,13 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
               style={styles.bookAgainButton}
               activeOpacity={0.7}
               onPress={() =>
-                navigation.navigate('BookService', {
-                  vendorId: booking.vendorId,
-                  serviceId: booking.service.id,
-                })
+                // A stay is rebooked by picking new nights, not a time slot.
+                booking.checkOutDate
+                  ? navigation.navigate('RentalDetail', { propertyId: booking.service.id })
+                  : navigation.navigate('BookService', {
+                      vendorId: booking.vendorId,
+                      serviceId: booking.service.id,
+                    })
               }
             >
               <Text style={styles.bookAgainLabel}>Book again</Text>
@@ -263,10 +265,17 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
         message="Are you sure you want to cancel this booking? This can't be undone."
         icon="close-circle-outline"
         iconTone="danger"
-        confirmLabel={cancelling ? 'Cancelling…' : 'Cancel booking'}
+        confirmLabel="Cancel booking"
         cancelLabel="Keep booking"
         onConfirm={handleCancelConfirmed}
-        onCancel={() => setCancelVisible(false)}
+        onCancel={() => {
+          setCancelVisible(false);
+          setCancelError(null);
+        }}
+        loading={cancelling}
+        error={cancelError}
+        confirmTestID="cancel-confirm"
+        cancelTestID="cancel-dismiss"
       />
     </SafeAreaView>
   );

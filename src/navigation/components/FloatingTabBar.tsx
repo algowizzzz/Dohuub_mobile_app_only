@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { CalendarTabIcon, ChatTabIcon, HomeTabIcon, UserTabIcon } from '../../components/icons/TabIcons';
+import { requireAuth } from '../../hooks/useRequireAuth';
 import { styles } from './FloatingTabBar.styles';
 
 const TAB_ICONS: Record<string, React.ComponentType<{ color: string; size?: number }>> = {
@@ -11,6 +12,12 @@ const TAB_ICONS: Record<string, React.ComponentType<{ color: string; size?: numb
   Bookings: CalendarTabIcon,
   Chat: ChatTabIcon,
   Profile: UserTabIcon,
+};
+
+/** Tabs a guest cannot open — pressing one shows the sign-in prompt instead. */
+const ACCOUNT_TABS: Record<string, string> = {
+  Bookings: 'Sign in to book services and see your bookings.',
+  Chat: 'Sign in to chat with the DoHuub AI assistant.',
 };
 
 const TAB_LABELS: Record<string, string> = {
@@ -39,6 +46,8 @@ export default function FloatingTabBar({ state, navigation }: BottomTabBarProps)
             const color = isFocused ? '#FFFFFF' : 'rgba(255, 255, 255, 0.7)';
 
             const handlePress = () => {
+              if (ACCOUNT_TABS[route.name] && !requireAuth(ACCOUNT_TABS[route.name])) return;
+
               const event = navigation.emit({
                 type: 'tabPress',
                 target: route.key,

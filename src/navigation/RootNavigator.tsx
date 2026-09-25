@@ -44,8 +44,12 @@ import CommerceMenuScreen from '../screens/Commerce/CommerceMenu';
 import CommerceCheckoutScreen from '../screens/Commerce/CommerceCheckout';
 import OrderPaymentScreen from '../screens/Commerce/OrderPayment';
 import OrderDetailScreen from '../screens/Commerce/OrderDetail';
+import ShoppingListScreen from '../screens/ShoppingList';
 import RentalsListScreen from '../screens/Rentals/RentalsListScreen';
 import RentalDetailScreen from '../screens/Rentals/RentalDetailScreen';
+import RentalDatesScreen from '../screens/Rentals/RentalDatesScreen';
+import RentalStayDetailsScreen from '../screens/Rentals/RentalStayDetailsScreen';
+import RentalConfirmScreen from '../screens/Rentals/RentalConfirmScreen';
 
 // Account-only screens. Entry points gate with requireAuth(); these guards
 // catch anything that slips past (deep links, missed buttons).
@@ -54,8 +58,10 @@ const guarded = {
   CommerceCheckout: withAuthGuard(CommerceCheckoutScreen, 'Sign in to check out your cart.'),
   OrderPayment: withAuthGuard(OrderPaymentScreen, 'Sign in to pay for your order.'),
   OrderDetail: withAuthGuard(OrderDetailScreen, 'Sign in to view your orders.'),
+  ShoppingList: withAuthGuard(ShoppingListScreen, 'Sign in to see your Shopping List.'),
   BookService: withAuthGuard(BookServiceScreen, 'Sign in to book this service.'),
   Payment: withAuthGuard(PaymentScreen, 'Sign in to complete your payment.'),
+  RentalConfirm: withAuthGuard(RentalConfirmScreen, 'Sign in to book this property.'),
   PaymentMethods: withAuthGuard(PaymentMethodsScreen, 'Sign in to manage your payment methods.'),
   EditPaymentCard: withAuthGuard(EditPaymentCardScreen, 'Sign in to manage your payment methods.'),
   SavedAddresses: withAuthGuard(SavedAddressesScreen, 'Sign in to manage your saved addresses.'),
@@ -98,11 +104,15 @@ export default function RootNavigator() {
       <Stack.Screen name="CommerceCheckout" component={guarded.CommerceCheckout} options={mainAppScreenOptions} />
       <Stack.Screen name="OrderPayment" component={guarded.OrderPayment} options={mainAppScreenOptions} />
       <Stack.Screen name="OrderDetail" component={guarded.OrderDetail} options={mainAppScreenOptions} />
+      <Stack.Screen name="ShoppingList" component={guarded.ShoppingList} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorStore" component={VendorStoreScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="Vendor" component={VendorScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="VendorReviews" component={VendorReviewsScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="RentalsList" component={RentalsListScreen} />
       <Stack.Screen name="RentalDetail" component={RentalDetailScreen} />
+      <Stack.Screen name="RentalDates" component={RentalDatesScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="RentalStayDetails" component={RentalStayDetailsScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="RentalConfirm" component={guarded.RentalConfirm} options={mainAppScreenOptions} />
       <Stack.Screen name="ServiceDetails" component={ServiceDetailsScreen} options={mainAppScreenOptions} />
       <Stack.Screen name="BookService" component={guarded.BookService} options={mainAppScreenOptions} />
       <Stack.Screen name="Payment" component={guarded.Payment} options={mainAppScreenOptions} />

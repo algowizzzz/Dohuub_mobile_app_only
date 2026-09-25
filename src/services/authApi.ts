@@ -52,6 +52,14 @@ export const authApi = {
   googleIdToken: (payload: { idToken: string; referralCode?: string }) =>
     post<AuthResponse>('/auth/google/id-token', payload, { skipAuth: true }),
 
+  appleIdToken: (payload: {
+    identityToken: string;
+    nonce?: string;
+    authorizationCode?: string;
+    fullName?: string;
+    referralCode?: string;
+  }) => post<AuthResponse>('/auth/apple/id-token', { ...payload, userType: 'user' }, { skipAuth: true }),
+
   requestPhoneOtp: (phoneNumber: string) =>
     post<{ sent: boolean }>('/auth/phone/otp/request', { phoneNumber }),
 

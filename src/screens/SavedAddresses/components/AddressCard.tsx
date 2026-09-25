@@ -10,13 +10,34 @@ type Props = {
   onSetDefault: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** Select mode: tapping the card picks this address. */
+  onSelect?: () => void;
+  selected?: boolean;
 };
 
-export default function AddressCard({ address, onSetDefault, onEdit, onDelete }: Props) {
+export default function AddressCard({
+  address,
+  onSetDefault,
+  onEdit,
+  onDelete,
+  onSelect,
+  selected = false,
+}: Props) {
   const meta = ADDRESS_TYPE_META[address.type];
 
   return (
-    <View style={[styles.card, address.isDefault && styles.cardDefault]}>
+    <TouchableOpacity
+      testID={`address-row-${address.id}`}
+      style={[
+        styles.card,
+        address.isDefault && styles.cardDefault,
+        selected && styles.cardSelected,
+      ]}
+      onPress={onSelect}
+      disabled={!onSelect}
+      activeOpacity={0.8}
+      accessibilityState={onSelect ? { selected } : undefined}
+    >
       <View style={styles.iconWrap}>
         <Icon name={meta.icon} size={20} color={colors.primary} />
       </View>
@@ -34,6 +55,15 @@ export default function AddressCard({ address, onSetDefault, onEdit, onDelete }:
           {formatAddressLine(address)}
         </Text>
       </View>
+
+      {onSelect ? (
+        <Icon
+          name={selected ? 'checkmark-circle' : 'ellipse-outline'}
+          size={22}
+          color={selected ? colors.primary : colors.textMuted}
+          style={styles.selectIcon}
+        />
+      ) : null}
 
       <View style={styles.actions}>
         <TouchableOpacity style={styles.iconButton} onPress={onEdit} hitSlop={4}>
@@ -55,6 +85,6 @@ export default function AddressCard({ address, onSetDefault, onEdit, onDelete }:
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

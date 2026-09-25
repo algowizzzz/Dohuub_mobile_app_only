@@ -23,6 +23,7 @@ export type ApiBookingReview = {
   id: string;
   stars: number;
   comment: string | null;
+  images?: string[];
 };
 
 export type ApiBooking = {
@@ -35,6 +36,12 @@ export type ApiBooking = {
   status: ApiBookingStatus;
   scheduledDate: string;
   scheduledTime: string;
+  /** Rentals only: the day the guest leaves (YYYY-MM-DD); that night is free. */
+  checkOutDate?: string | null;
+  nights?: number | null;
+  adults?: number | null;
+  children?: number | null;
+  specialRequests?: string | null;
   startsAt: string;
   endsAt: string;
   serviceAddressId: string;
@@ -100,21 +107,33 @@ export type BookingListParams = {
   sortOrder?: 'asc' | 'desc';
 };
 
+/**
+ * A slot booking sends `scheduledTime`; a rental stay sends `checkOutDate` and
+ * the guest counts instead, with `scheduledDate` as the check-in day. The
+ * server prices a stay itself (nightly rate × nights + cleaning + service fee).
+ */
+export type CreateBookingPayload = {
+  serviceCategoryId: string;
+  serviceAddressId: string;
+  scheduledDate: string;
+  scheduledTime?: string;
+  discountAmount?: number;
+  pointsToRedeem?: number;
+  notes?: string;
+  checkOutDate?: string;
+  adults?: number;
+  children?: number;
+  specialRequests?: string;
+};
+
 export const bookingsApi = {
   list: (params?: BookingListParams) => getPage<ApiBooking>('/bookings', { params }),
 
   get: (id: string) =>
     get<{ booking: ApiBooking }>(`/bookings/${id}`).then(r => r.booking),
 
-  create: (payload: {
-    serviceCategoryId: string;
-    serviceAddressId: string;
-    scheduledDate: string;
-    scheduledTime: string;
-    discountAmount?: number;
-    pointsToRedeem?: number;
-    notes?: string;
-  }) => post<{ booking: ApiBooking }>('/bookings', payload).then(r => r.booking),
+  create: (payload: CreateBookingPayload) =>
+    post<{ booking: ApiBooking }>('/bookings', payload).then(r => r.booking),
 
   pay: (id: string, payload: { paymentMethodId?: string; confirmNow?: boolean }) =>
     post<{ booking: ApiBooking; clientSecret?: string }>(`/bookings/${id}/pay`, {

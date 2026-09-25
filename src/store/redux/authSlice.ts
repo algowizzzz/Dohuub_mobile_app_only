@@ -4,6 +4,8 @@ import type { CustomerUser } from '../authStore';
 export type AuthState = {
   user: CustomerUser | null;
   hasOnboarded: boolean;
+  /** Browsing without an account; cleared on any sign-in or logout. */
+  isGuest: boolean;
   signupEmail: string;
   pendingPassword: string;
 };
@@ -11,6 +13,7 @@ export type AuthState = {
 const initialState: AuthState = {
   user: null,
   hasOnboarded: false,
+  isGuest: false,
   signupEmail: '',
   pendingPassword: '',
 };
@@ -25,6 +28,9 @@ const authSlice = createSlice({
     setHasOnboarded(state, action: PayloadAction<boolean>) {
       state.hasOnboarded = Boolean(action.payload);
     },
+    setIsGuest(state, action: PayloadAction<boolean>) {
+      state.isGuest = Boolean(action.payload);
+    },
     setSignupEmail(state, action: PayloadAction<string>) {
       state.signupEmail = action.payload || '';
     },
@@ -36,6 +42,7 @@ const authSlice = createSlice({
     },
     clearAuthLocal(state) {
       state.user = null;
+      state.isGuest = false;
       state.signupEmail = '';
       state.pendingPassword = '';
     },
@@ -45,6 +52,7 @@ const authSlice = createSlice({
 export const {
   setUser,
   setHasOnboarded,
+  setIsGuest,
   setSignupEmail,
   setPendingPassword,
   setAuthFields,

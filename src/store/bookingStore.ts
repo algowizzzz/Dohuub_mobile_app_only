@@ -15,8 +15,24 @@ export type BookingDraft = {
   pointsToRedeem?: number;
 };
 
+/** Everything that goes into `POST /bookings` — a changed field means a different booking. */
+const draftKey = (draft: BookingDraft) =>
+  JSON.stringify([
+    draft.serviceCategoryId,
+    draft.serviceAddressId,
+    draft.scheduledDate,
+    draft.scheduledTime,
+    draft.notes ?? '',
+    draft.pointsToRedeem ?? 0,
+  ]);
+
 type BookingStore = {
   draft: BookingDraft;
+  /**
+   * The unpaid booking `createFromDraft` made last, so backing out of Payment
+   * and confirming again reuses it instead of holding a second slot.
+   */
+  pendingBooking: { id: string; key: string } | null;
   lastConfirmation: ApiBooking | null;
   bookings: ApiBooking[];
   pagination: Pagination | null;
@@ -41,6 +57,7 @@ export const useBookingStore = create<BookingStore>()(
   persist(
     (set, get) => ({
       draft: {},
+      pendingBooking: null,
       lastConfirmation: null,
       bookings: [],
       pagination: null,
@@ -69,6 +86,26 @@ export const useBookingStore = create<BookingStore>()(
         if (!draft.serviceCategoryId || !draft.serviceAddressId || !draft.scheduledDate || !draft.scheduledTime) {
           throw new Error('Booking draft is incomplete.');
         }
+        const key = draftKey(draft);
+        const prior = get().pendingBooking;
+        if (prior) {
+          const existing = await bookingsApi.get(prior.id).catch(() => null);
+          const stillUnpaid =
+            !!existing &&
+            existing.status === 'pending' &&
+            existing.paymentStatus !== 'paid' &&
+            existing.paymentStatus !== 'processing';
+          if (stillUnpaid && prior.key === key) {
+            set({ lastConfirmation: existing });
+            return existing;
+          }
+          if (stillUnpaid) {
+            // The customer changed the date/time/address/etc. — release the
+            // old slot so only the new booking is left pending.
+            await bookingsApi.cancel(prior.id, 'Replaced by an updated booking').catch(() => {});
+          }
+          set({ pendingBooking: null });
+        }
         const booking = await bookingsApi.create({
           serviceCategoryId: draft.serviceCategoryId,
           serviceAddressId: draft.serviceAddressId,
@@ -77,19 +114,28 @@ export const useBookingStore = create<BookingStore>()(
           notes: draft.notes,
           pointsToRedeem: draft.pointsToRedeem,
         });
-        set({ lastConfirmation: booking });
+        set({ lastConfirmation: booking, pendingBooking: { id: booking.id, key } });
         return booking;
       },
 
       pay: async (id, payload) => {
         const { booking } = await bookingsApi.pay(id, payload);
-        set({ lastConfirmation: booking });
+        set(state => ({
+          lastConfirmation: booking,
+          pendingBooking:
+            state.pendingBooking?.id === id && booking.paymentStatus === 'paid'
+              ? null
+              : state.pendingBooking,
+        }));
         get().patchRow(id, booking);
         return booking;
       },
 
+      // The API requires a reason (3+ characters); the customer's confirm
+      // dialog doesn't ask for one, so it gets a plain default.
       cancel: async (id, reason) => {
-        const booking = await bookingsApi.cancel(id, reason);
+        const booking = await bookingsApi.cancel(id, reason?.trim() || 'Cancelled by the customer');
+        if (get().pendingBooking?.id === id) set({ pendingBooking: null });
         get().patchRow(id, booking);
         return booking;
       },

@@ -11,13 +11,23 @@ type Props = {
   subtitle?: string;
   disabled?: boolean;
   onPress: () => void;
+  testID?: string;
 };
 
-export default function PickerRow({ icon, value, placeholder, subtitle, disabled, onPress }: Props) {
+export default function PickerRow({
+  icon,
+  value,
+  placeholder,
+  subtitle,
+  disabled,
+  onPress,
+  testID,
+}: Props) {
   const hasValue = value.length > 0;
 
   return (
     <TouchableOpacity
+      testID={testID}
       style={[styles.row, disabled && styles.rowDisabled]}
       onPress={onPress}
       disabled={disabled}

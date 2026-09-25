@@ -65,6 +65,7 @@ export default function SelectLocationModal({
                 return (
                   <TouchableOpacity
                     key={address.id}
+                    testID={`address-row-${address.id}`}
                     style={[styles.card, isSelected && styles.cardSelected]}
                     onPress={() => onSelect(address.id)}
                     activeOpacity={0.85}
@@ -98,7 +99,7 @@ export default function SelectLocationModal({
           </ScrollView>
 
           <View style={styles.footer}>
-            <TouchableOpacity onPress={onAddNew} activeOpacity={0.88}>
+            <TouchableOpacity onPress={onAddNew} activeOpacity={0.88} testID="address-add-new">
               <LinearGradient
                 colors={['#4CA6FA', '#1D4ADD']}
                 start={{ x: 0, y: 0 }}

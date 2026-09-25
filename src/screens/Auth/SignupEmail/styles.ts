@@ -73,6 +73,9 @@ export const styles = StyleSheet.create({
     color: colors.textMuted,
     marginHorizontal: spacing.sm,
   },
+  socialButtons: {
+    gap: spacing.md,
+  },
   // PWA .error: 14px on error-light, radius 10, max-width 340
   errorText: {
     fontFamily: fontFamily.regular,

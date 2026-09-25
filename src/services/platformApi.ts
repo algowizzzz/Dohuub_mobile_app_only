@@ -1,4 +1,4 @@
-import { get, patch, post, put, del } from './http';
+import { get, patch, post, del } from './http';
 import type { ApiUser } from '../store/sessionStore';
 
 export type PlatformConfig = {
@@ -48,26 +48,20 @@ export const usersApi = {
   },
 };
 
-export const vendorApi = {
-  myProfile: () =>
-    get<{ vendor: Record<string, unknown> }>('/vendors/me/profile').then(r => r.vendor),
-  saveProfile: (payload: Record<string, unknown>) =>
-    post<{ vendor: Record<string, unknown> }>('/vendors/me/profile', payload).then(r => r.vendor),
-  updateProfile: (payload: Record<string, unknown>) =>
-    patch<{ vendor: Record<string, unknown> }>('/vendors/me/profile', payload).then(r => r.vendor),
-  dashboard: () => get<Record<string, unknown>>('/vendors/me/dashboard'),
-  earnings: () => get<Record<string, unknown>>('/vendors/me/earnings'),
-  startStripeOnboarding: () => post<{ url: string }>('/vendors/me/stripe/onboarding'),
-  stripeStatus: () => get<Record<string, unknown>>('/vendors/me/stripe/status'),
-  stripeDashboard: () => get<{ url: string }>('/vendors/me/stripe/dashboard'),
-  hours: () => get<Record<string, unknown>>('/vendors/me/hours'),
-  saveHours: (payload: Record<string, unknown>) =>
-    put<Record<string, unknown>>('/vendors/me/hours', payload),
-  availability: (id: string, date: string) =>
-    get<Record<string, unknown>>(`/vendors/${id}/availability`, { skipAuth: true, params: { date } }),
-};
-
 export const uploadsApi = {
   limits: () => get<Record<string, unknown>>('/uploads/limits'),
   removeImage: (key: string) => del<void>('/uploads', { data: { key } } as never),
+
+  /** Up to 5 images in one request; resolves to their public URLs in order. */
+  images: (
+    files: Array<{ uri: string; name: string; type: string }>,
+    folder: 'services' | 'vendors' | 'users' | 'reviews' | 'documents' | 'misc' = 'misc',
+  ) => {
+    const form = new FormData();
+    files.forEach(file => form.append('files', file as unknown as Blob));
+    return post<{ files: Array<{ url: string | null; key: string }> }>('/uploads/images', form, {
+      params: { folder },
+      timeout: 60000,
+    }).then(r => r.files.map(f => f.url).filter((u): u is string => !!u));
+  },
 };

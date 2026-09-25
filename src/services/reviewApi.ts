@@ -5,6 +5,8 @@ export type ApiReview = {
   bookingId: string;
   stars: number;
   comment?: string | null;
+  /** Photos the customer attached (up to 5 URLs). */
+  images?: string[];
   reviewerName?: string;
   serviceId: string;
   vendorId: string;
@@ -43,10 +45,10 @@ export const reviewsApi = {
   listMine: (params?: { page?: number; limit?: number }) =>
     get<ApiReview[]>('/reviews/mine', { params }),
 
-  create: (payload: { bookingId: string; stars: number; comment?: string }) =>
+  create: (payload: { bookingId: string; stars: number; comment?: string; images?: string[] }) =>
     post<{ review: ApiReview }>('/reviews', payload).then(r => r.review),
 
-  update: (id: string, payload: { stars?: number; comment?: string }) =>
+  update: (id: string, payload: { stars?: number; comment?: string; images?: string[] }) =>
     patch<{ review: ApiReview }>(`/reviews/${id}`, payload).then(r => r.review),
 
   remove: (id: string) => del<void>(`/reviews/${id}`),

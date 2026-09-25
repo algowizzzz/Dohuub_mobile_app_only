@@ -77,7 +77,9 @@ export default function BookServiceScreen({ navigation, route }: Props) {
 
   const service = vendor?.services.find(item => item.id === route.params.serviceId);
   const selectedAddress =
-    addresses.find(address => address.id === selectedAddressId) ?? addresses[0];
+    addresses.find(address => address.id === selectedAddressId) ??
+    addresses.find(address => address.isDefault) ??
+    addresses[0];
 
   if (loading) {
     return (
@@ -195,12 +197,14 @@ export default function BookServiceScreen({ navigation, route }: Props) {
               value={ADDRESS_TYPE_META[selectedAddress.type].label}
               placeholder="Choose an address"
               subtitle={formatAddressLine(selectedAddress)}
-              onPress={() => navigation.navigate('SavedAddresses')}
+              onPress={() => navigation.navigate('SavedAddresses', { mode: 'select' })}
+              testID="book-change-address"
             />
           ) : (
             <TouchableOpacity
               style={styles.addAddressRow}
-              onPress={() => navigation.navigate('AddAddress')}
+              testID="book-add-address"
+              onPress={() => navigation.navigate('AddAddress', { select: true })}
               activeOpacity={0.8}
             >
               <Icon name="add-circle-outline" size={16} color={colors.primary} />

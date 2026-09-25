@@ -1,16 +1,18 @@
 import { useSelector } from 'react-redux';
 import { authApi } from '../services/authApi';
 import { signInWithGoogle as googleSignIn } from '../services/googleAuth';
+import { signInWithApple as appleSignIn } from '../services/appleAuth';
 import { usersApi } from '../services/platformApi';
 import { endSession } from '../services/endSession';
 import { ApiError } from '../services/ApiError';
 import { apiLog } from '../services/logger';
-import { useSessionStore, type ApiUser } from './sessionStore';
+import { useSessionStore, type ApiUser, type Session } from './sessionStore';
 import { store } from './redux/store';
 import {
   clearAuthLocal,
   setAuthFields,
   setHasOnboarded,
+  setIsGuest,
   setPendingPassword,
   setUser,
   type AuthState,
@@ -68,6 +70,24 @@ function dispatchAuth(partial: Partial<AuthState>) {
   store.dispatch(setAuthFields(partial));
 }
 
+/** Shared tail of every sign-in method: validate the role, then persist. */
+function startSession(data: { user: ApiUser; session: Session }) {
+  const { user } = data;
+
+  if (user.userType !== 'user') {
+    throw new ApiError({ message: NOT_CUSTOMER, status: 403, code: 'NOT_A_CUSTOMER' });
+  }
+  if (user.isBlocked) {
+    throw new ApiError({ message: BLOCKED, status: 403, code: 'USER_BLOCKED' });
+  }
+
+  useSessionStore.getState().setSession(data.session);
+  useSessionStore.getState().setUser(user);
+  const customer = toCustomer(user)!;
+  dispatchAuth({ user: customer, hasOnboarded: true, isGuest: false });
+  return customer;
+}
+
 const actions = {
   setUser: (user: CustomerUser | null) => {
     store.dispatch(setUser(user));
@@ -75,41 +95,23 @@ const actions = {
   setHasOnboarded: (value: boolean) => {
     store.dispatch(setHasOnboarded(value));
   },
+  setIsGuest: (value: boolean) => {
+    store.dispatch(setIsGuest(value));
+  },
 
   signIn: async ({ email, password }: { email: string; password: string }) => {
     const data = await authApi.login({ email, password });
-    const { user } = data;
-
-    if (user.userType !== 'user') {
-      throw new ApiError({ message: NOT_CUSTOMER, status: 403, code: 'NOT_A_CUSTOMER' });
-    }
-    if (user.isBlocked) {
-      throw new ApiError({ message: BLOCKED, status: 403, code: 'USER_BLOCKED' });
-    }
-
-    useSessionStore.getState().setSession(data.session);
-    useSessionStore.getState().setUser(user);
-    const customer = toCustomer(user)!;
-    dispatchAuth({ user: customer, hasOnboarded: true });
-    return customer;
+    return startSession(data);
   },
 
-  signInWithGoogle: async (referralCode?: string) => {
-    const data = await googleSignIn(referralCode);
-    const { user } = data;
+  signInWithGoogle: async (referralCode?: string) => startSession(await googleSignIn(referralCode)),
 
-    if (user.userType !== 'user') {
-      throw new ApiError({ message: NOT_CUSTOMER, status: 403, code: 'NOT_A_CUSTOMER' });
-    }
-    if (user.isBlocked) {
-      throw new ApiError({ message: BLOCKED, status: 403, code: 'USER_BLOCKED' });
-    }
+  signInWithApple: async (referralCode?: string) => startSession(await appleSignIn(referralCode)),
 
-    useSessionStore.getState().setSession(data.session);
-    useSessionStore.getState().setUser(user);
-    const customer = toCustomer(user)!;
-    dispatchAuth({ user: customer, hasOnboarded: true });
-    return customer;
+  /** Browse without an account. Anything account-bound prompts a sign-in. */
+  continueAsGuest: () => {
+    useSessionStore.getState().clear();
+    dispatchAuth({ user: null, isGuest: true, hasOnboarded: true });
   },
 
   signUp: async ({
@@ -240,6 +242,7 @@ function buildApi(auth: ReturnType<typeof store.getState>['auth']) {
   return {
     user: auth.user,
     hasOnboarded: auth.hasOnboarded,
+    isGuest: auth.isGuest,
     signupEmail: auth.signupEmail,
     pendingPassword: auth.pendingPassword,
     ...actions,

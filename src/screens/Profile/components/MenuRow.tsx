@@ -8,6 +8,7 @@ type Props = {
   icon: string;
   label: string;
   isLast?: boolean;
+  testID?: string;
   // Optional trailing content (e.g. the PWA's points pill on "Rewards
   // Wallet") that replaces the default chevron for link rows.
   rightElement?: React.ReactNode;
@@ -47,7 +48,7 @@ export default function MenuRow(props: Props) {
   }
 
   return (
-    <TouchableOpacity onPress={props.onPress} activeOpacity={0.7}>
+    <TouchableOpacity testID={props.testID} onPress={props.onPress} activeOpacity={0.7}>
       {content}
     </TouchableOpacity>
   );

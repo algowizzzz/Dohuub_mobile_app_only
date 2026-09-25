@@ -67,6 +67,22 @@ export const styles = StyleSheet.create({
   signInButton: {
     marginBottom: spacing.md,
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontFamily: fontFamily.regular,
+    fontSize: 12,
+    color: colors.textMuted,
+    marginHorizontal: spacing.sm,
+  },
   // PWA .error: 14px, var(--m-error) on var(--m-error-light), radius 10
   errorText: {
     fontFamily: fontFamily.regular,

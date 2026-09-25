@@ -3,6 +3,7 @@ import { Image, Text, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
 import type { ApiVendorReview } from '../../../services/catalogApi';
+import ReviewPhotos from '../../../components/ui/ReviewPhotos';
 import { abbreviateName, formatRelativeTime } from '../../../utils/relativeTime';
 import { styles } from './ReviewCard.styles';
 
@@ -45,6 +46,7 @@ export default function ReviewCard({ review }: Props) {
         </View>
       </View>
       {review.comment ? <Text style={styles.comment}>{review.comment}</Text> : null}
+      <ReviewPhotos images={review.images} />
     </View>
   );
 }

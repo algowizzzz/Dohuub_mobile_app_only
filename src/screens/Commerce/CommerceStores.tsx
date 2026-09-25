@@ -11,6 +11,7 @@ import ErrorState from '../../components/ui/ErrorState';
 import { colors } from '../../styles';
 import { categoryBeauty, commerceFood, commerceGrocery } from '../../assets/images';
 import { commerceApi, type ApiCommerceStore } from '../../services/commerceApi';
+import { getNearMeCoords } from '../../utils/nearMe';
 import { styles as serviceStyles } from '../Services/styles';
 import { commerceStyles as styles } from './styles';
 
@@ -32,7 +33,13 @@ export default function CommerceStoresScreen({ navigation, route }: Props) {
     setLoading(true);
     setError(null);
     commerceApi
-      .listStores({ kind, limit: 50, ...(query.trim() ? { search: query.trim() } : {}) })
+      .listStores({
+        kind,
+        limit: 50,
+        ...(query.trim() ? { search: query.trim() } : {}),
+        // Only stores that deliver to the selected / default address.
+        ...getNearMeCoords(),
+      })
       .then(({ items }) => setStores(items))
       .catch(err => setError((err as Error).message))
       .finally(() => setLoading(false));

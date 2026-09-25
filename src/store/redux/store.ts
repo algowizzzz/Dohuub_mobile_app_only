@@ -33,7 +33,7 @@ const sessionPersistConfig = {
 const authPersistConfig = {
   key: 'dohuub-auth',
   storage: AsyncStorage,
-  whitelist: ['hasOnboarded'] as string[],
+  whitelist: ['hasOnboarded', 'isGuest'] as string[],
 };
 
 const rootReducer = combineReducers({

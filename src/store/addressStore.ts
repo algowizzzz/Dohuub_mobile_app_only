@@ -17,7 +17,7 @@ type AddressStore = {
     latitude?: number;
     longitude?: number;
     isDefault?: boolean;
-  }) => Promise<void>;
+  }) => Promise<ApiAddress>;
   updateAddress: (id: string, payload: Partial<Parameters<AddressStore['addAddress']>[0]>) => Promise<void>;
   removeAddress: (id: string) => Promise<void>;
   setDefault: (id: string) => Promise<void>;
@@ -46,6 +46,7 @@ export const useAddressStore = create<AddressStore>((set) => ({
         ? [...state.addresses.map(a => ({ ...a, isDefault: false })), created]
         : [...state.addresses, created],
     }));
+    return created;
   },
 
   updateAddress: async (id, payload) => {

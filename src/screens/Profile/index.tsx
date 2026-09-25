@@ -15,11 +15,114 @@ import { colors } from '../../styles';
 import ProfileCard from './components/ProfileCard';
 import MenuRow from './components/MenuRow';
 import DangerRow from './components/DangerRow';
+import GuestProfileCard from './components/GuestProfileCard';
+import { requireAuth, useIsSignedIn } from '../../hooks/useRequireAuth';
 import { styles } from './styles';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
+  const signedIn = useIsSignedIn();
+  return signedIn ? <SignedInProfile /> : <GuestProfile />;
+}
+
+/**
+ * Guests keep the help and legal pages; account rows stay visible so the
+ * features are discoverable, but open the sign-in prompt.
+ */
+function GuestProfile() {
+  const navigation = useNavigation<NavigationProp>();
+  const gated = (message: string, go: () => void) => () => {
+    if (requireAuth(message)) go();
+  };
+
+  return (
+    <MainScreenLayout>
+      <HomeHeader onAvatarPress={() => {}} />
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <GuestProfileCard
+          onSignIn={() => navigation.navigate('Welcome')}
+          onSignUp={() => navigation.navigate('Signup')}
+        />
+
+        <View style={styles.group}>
+          <MenuRow
+            icon="gift-outline"
+            label="Rewards Wallet"
+            onPress={gated('Sign in to earn and redeem reward points.', () =>
+              navigation.navigate('RewardsWallet'),
+            )}
+          />
+          <MenuRow
+            icon="people-outline"
+            label="Refer a Friend"
+            onPress={gated('Sign in to refer friends and earn rewards.', () =>
+              navigation.navigate('ReferFriend'),
+            )}
+            isLast
+          />
+        </View>
+
+        <View style={styles.group}>
+          <MenuRow
+            testID="profile-shopping-list"
+            icon="heart-outline"
+            label="Shopping List"
+            onPress={gated('Sign in to see your Shopping List.', () =>
+              navigation.navigate('ShoppingList'),
+            )}
+          />
+          <MenuRow
+            icon="location-outline"
+            label="Saved Addresses"
+            onPress={gated('Sign in to manage your saved addresses.', () =>
+              navigation.navigate('SavedAddresses'),
+            )}
+          />
+          <MenuRow
+            icon="card-outline"
+            label="Payment Methods"
+            onPress={gated('Sign in to manage your payment methods.', () =>
+              navigation.navigate('PaymentMethods'),
+            )}
+          />
+          <MenuRow
+            icon="help-circle-outline"
+            label="Help & Support"
+            onPress={() => navigation.navigate('HelpSupport')}
+          />
+          <MenuRow
+            icon="shield-checkmark-outline"
+            label="Terms of Service"
+            onPress={() => navigation.navigate('TermsOfService')}
+          />
+          <MenuRow
+            icon="shield-outline"
+            label="Privacy Policy"
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+            isLast
+          />
+        </View>
+
+        <View style={styles.group}>
+          <MenuRow
+            icon="information-circle-outline"
+            label="About DoHuub"
+            onPress={() => navigation.navigate('AboutDoHuub')}
+            isLast
+          />
+        </View>
+      </ScrollView>
+    </MainScreenLayout>
+  );
+}
+
+function SignedInProfile() {
   const navigation = useNavigation<NavigationProp>();
   const user = useAuthStore(state => state.user);
   const logout = useAuthStore(state => state.logout);
@@ -112,6 +215,12 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.group}>
+          <MenuRow
+            testID="profile-shopping-list"
+            icon="heart-outline"
+            label="Shopping List"
+            onPress={() => navigation.navigate('ShoppingList')}
+          />
           <MenuRow
             icon="location-outline"
             label="Saved Addresses"
