@@ -23,6 +23,7 @@ import TimelineStepRow from './components/TimelineStepRow';
 import DetailInfoRow from './components/DetailInfoRow';
 import ReviewSection from './components/ReviewSection';
 import { styles } from './styles';
+import Price from '../../components/ui/Price';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
@@ -190,12 +191,12 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
             <Text style={styles.cardTitle}>Payment</Text>
             <View style={styles.paymentRow}>
               <Text style={styles.paymentLabel}>Service price</Text>
-              <Text style={styles.paymentValue}>${booking.servicePrice}</Text>
+              <Price amount={booking.servicePrice} currency={booking.currency} style={styles.paymentValue} align="right" />
             </View>
             {booking.discountAmount > 0 ? (
               <View style={styles.paymentRow}>
                 <Text style={styles.paymentLabel}>Points discount</Text>
-                <Text style={styles.paymentDiscount}>-${booking.discountAmount}</Text>
+                <Price amount={booking.discountAmount} currency={booking.currency} style={styles.paymentDiscount} align="right" prefix="-" />
               </View>
             ) : null}
             <View style={styles.paymentDivider} />
@@ -203,7 +204,7 @@ export default function BookingDetailScreen({ navigation, route }: Props) {
               <Text style={styles.totalLabel}>
                 {booking.paymentStatus === 'paid' ? 'Total paid' : 'Total due'}
               </Text>
-              <Text style={styles.totalValue}>${booking.totalAmount}</Text>
+              <Price amount={booking.totalAmount} currency={booking.currency} style={styles.totalValue} align="right" />
             </View>
           </View>
 

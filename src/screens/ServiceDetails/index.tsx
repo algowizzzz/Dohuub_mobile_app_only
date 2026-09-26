@@ -13,6 +13,7 @@ import { useCatalogStore } from '../../store/catalogStore';
 import type { ApiServiceListing, ApiVendorDetail } from '../../services/catalogApi';
 import { formatDurationMinutes } from '../../utils/duration';
 import EarnPointsCard from '../../components/ui/EarnPointsCard';
+import Price from '../../components/ui/Price';
 import { requireAuth } from '../../hooks/useRequireAuth';
 import WishlistHeart from '../../components/commerce/WishlistHeart';
 import { styles } from './styles';
@@ -158,7 +159,9 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
           <Icon name="chevron-forward" size={18} color={colors.textMuted} />
         </TouchableOpacity>
 
-        <EarnPointsCard pointsPerDollar={service.pointsPerDollar} />
+        {vendor.poweredByDoHuub ? (
+          <EarnPointsCard pointsPerDollar={service.pointsPerDollar} currency={service.currency} />
+        ) : null}
 
         <View style={styles.pricingRow}>
           <View style={styles.pricingLabelRow}>
@@ -166,9 +169,14 @@ export default function ServiceDetailsScreen({ navigation, route }: Props) {
             <Text style={styles.pricingLabel}>Pricing</Text>
           </View>
           <View style={styles.priceValueRow}>
-            <Text style={styles.price}>${price}</Text>
+            <Price amount={price} currency={service.currency} style={styles.price} align="right" />
             {service.discountedPrice ? (
-              <Text style={styles.originalPrice}>${service.price}</Text>
+              <Price
+                amount={service.price}
+                currency={service.currency}
+                style={styles.originalPrice}
+                hideConverted
+              />
             ) : null}
           </View>
         </View>

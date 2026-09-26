@@ -1,5 +1,5 @@
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
@@ -8,8 +8,14 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import { ENV } from './src/config/env';
 import AppNavigator from './src/navigation/AppNavigator';
 import { persistor, store } from './src/store/redux/store';
+import { useCurrencyStore } from './src/store/currencyStore';
 
 function App() {
+  // Exchange rates for the buyer's display currency, once per app session.
+  useEffect(() => {
+    useCurrencyStore.getState().loadRates().catch(() => {});
+  }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

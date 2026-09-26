@@ -5,6 +5,7 @@ import { colors } from '../../../styles';
 import type { ApiVendorService } from '../../../services/catalogApi';
 import { formatDurationHours } from '../../../utils/duration';
 import { styles } from './ServiceCard.styles';
+import Price from '../../../components/ui/Price';
 
 type Props = {
   service: ApiVendorService;
@@ -61,7 +62,7 @@ export default function ServiceCard({ service, ratingAverage, ratingCount, onPre
             </View>
           ) : null}
         </View>
-        <Text style={styles.price}>${price}</Text>
+        <Price amount={price} currency={service.currency} style={styles.price} align="right" compact />
       </View>
     </TouchableOpacity>
   );

@@ -42,7 +42,8 @@ export default function VendorStoreScreen({ navigation, route }: Props) {
     return filtered.length > 0 ? filtered : vendor.services;
   }, [vendor, categoryId]);
 
-  const pointsRate = offered[0]?.pointsPerDollar ?? vendor?.services[0]?.pointsPerDollar ?? 1;
+  const firstService = offered[0] ?? vendor?.services[0];
+  const pointsRate = firstService?.pointsPerDollar ?? 1;
 
   if (loading) {
     return (
@@ -111,7 +112,10 @@ export default function VendorStoreScreen({ navigation, route }: Props) {
           </View>
 
           <View style={styles.content}>
-            <EarnPointsCard pointsPerDollar={pointsRate} />
+            {/* Only Powered by DoHuub vendors award points. */}
+            {vendor.poweredByDoHuub ? (
+              <EarnPointsCard pointsPerDollar={pointsRate} currency={firstService?.currency} />
+            ) : null}
 
             <Text style={styles.sectionTitle}>Services Offered</Text>
             {offered.length === 0 ? (

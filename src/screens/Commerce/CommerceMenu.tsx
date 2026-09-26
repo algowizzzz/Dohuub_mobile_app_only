@@ -26,6 +26,9 @@ import { requireAuth, useIsSignedIn } from '../../hooks/useRequireAuth';
 import { styles as serviceStyles } from '../Services/styles';
 import { commerceStyles as styles } from './styles';
 import { cartStyles } from './cartStyles';
+import Price from '../../components/ui/Price';
+import { pointsRateText } from '../../components/ui/EarnPointsCard';
+import { useFormatMoney } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CommerceMenu'>;
 
@@ -42,6 +45,7 @@ export default function CommerceMenuScreen({ navigation, route }: Props) {
   const loadCart = useCommerceStore(s => s.loadCart);
   const setQuantity = useCommerceStore(s => s.setQuantity);
   const signedIn = useIsSignedIn();
+  const formatPrice = useFormatMoney();
 
   const [storeName, setStoreName] = useState('Store');
   const [powered, setPowered] = useState(false);
@@ -129,6 +133,13 @@ export default function CommerceMenuScreen({ navigation, route }: Props) {
   const cartCount = signedIn ? cartItemCount : 0;
   const cartSubtotal = signedIn ? cartTotal : 0;
   const cartBottom = Math.max(insets.bottom, 8) + 10;
+  // A sum is only meaningful when every cart line shares one currency.
+  const cartCurrencies = new Set(
+    carts.flatMap(c => c.items.map(i => i.product?.currency || 'USD')),
+  );
+  const cartCurrency = cartCurrencies.size === 1 ? [...cartCurrencies][0] : null;
+  const pointsRate = products.find(p => (p.pointsPerDollar ?? 0) > 0)?.pointsPerDollar;
+  const storeCurrency = products[0]?.currency;
 
   const headerRight = (
     <View style={styles.headerActions}>
@@ -232,7 +243,7 @@ export default function CommerceMenuScreen({ navigation, route }: Props) {
                 <View style={styles.pointsText}>
                   <Text style={styles.pointsTitle}>Earn points on this purchase</Text>
                   <Text style={styles.pointsSub}>
-                    1 point per $1 spent • Points added after delivery
+                    {pointsRateText(pointsRate, storeCurrency)} • Points added after delivery
                   </Text>
                 </View>
               </View>
@@ -260,7 +271,7 @@ export default function CommerceMenuScreen({ navigation, route }: Props) {
                     </Text>
                     <View style={styles.productFooter}>
                       <View style={{ flexShrink: 1 }}>
-                        <Text style={styles.itemPrice}>${price.toFixed(2)}</Text>
+                        <Price amount={price} currency={item.currency} style={styles.itemPrice} />
                         {item.unitLabel ? (
                           <Text style={styles.unitLabel}>{item.unitLabel}</Text>
                         ) : null}
@@ -306,7 +317,8 @@ export default function CommerceMenuScreen({ navigation, route }: Props) {
       {cartCount > 0 ? (
         <View style={[styles.cartBar, { bottom: cartBottom }]}>
           <Text style={styles.cartBarText} numberOfLines={1}>
-            {cartCount} item{cartCount === 1 ? '' : 's'} · ${cartSubtotal.toFixed(2)}
+            {cartCount} item{cartCount === 1 ? '' : 's'}
+            {cartCurrency ? ` · ${formatPrice(cartSubtotal, cartCurrency)}` : ''}
           </Text>
           <TouchableOpacity
             testID="cart-bar-checkout"

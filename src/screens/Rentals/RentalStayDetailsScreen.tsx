@@ -21,12 +21,13 @@ import { BookingFooter, GradientFill } from './bookingParts';
 import { FG, MUTED_FG, styles, TEAL_GRADIENT, TEAL_TEXT, TEAL_TINT } from './bookingStyles';
 import {
   formatDateKey,
-  formatMoney,
   nightsBetween,
   stayDuration,
   stayPricing,
   useRentalStay,
 } from './rentalBooking';
+import Price from '../../components/ui/Price';
+import { useDisplayCurrency } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RentalStayDetails'>;
 
@@ -77,6 +78,7 @@ export default function RentalStayDetailsScreen({ navigation, route }: Props) {
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [specialRequests, setSpecialRequests] = useState('');
+  const displayCurrency = useDisplayCurrency();
 
   if (loading) {
     return (
@@ -103,7 +105,7 @@ export default function RentalStayDetailsScreen({ navigation, route }: Props) {
   const totalGuests = adults + children;
   const full = totalGuests >= cap;
   const { accommodation, accommodationLabel, cleaningFee, serviceFee, subtotal } =
-    stayPricing(property, nights);
+    stayPricing(property, nights, displayCurrency);
 
   return (
     <MainScreenLayout edges={['top', 'bottom']}>
@@ -220,19 +222,19 @@ export default function RentalStayDetailsScreen({ navigation, route }: Props) {
               {/* Both fees always show, as $0 when the vendor left them blank. */}
               <View style={styles.rowBetween}>
                 <Text style={styles.textMuted}>{accommodationLabel}</Text>
-                <Text style={styles.text}>${formatMoney(accommodation)}</Text>
+                <Price amount={accommodation} currency={property.currency} style={styles.text} align="right" compact />
               </View>
               <View style={styles.rowBetween}>
                 <Text style={styles.textMuted}>Cleaning fee</Text>
-                <Text style={styles.text}>${formatMoney(cleaningFee)}</Text>
+                <Price amount={cleaningFee} currency={property.currency} style={styles.text} align="right" compact />
               </View>
               <View style={styles.rowBetween}>
                 <Text style={styles.textMuted}>Service fee</Text>
-                <Text style={styles.text}>${formatMoney(serviceFee)}</Text>
+                <Price amount={serviceFee} currency={property.currency} style={styles.text} align="right" compact />
               </View>
               <View style={[styles.tealDivider, styles.rowBetween]}>
                 <Text style={styles.text}>Total</Text>
-                <Text style={styles.totalValueXl}>${formatMoney(subtotal)}</Text>
+                <Price amount={subtotal} currency={property.currency} style={styles.totalValueXl} align="right" compact />
               </View>
             </View>
           </View>

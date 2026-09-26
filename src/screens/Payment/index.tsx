@@ -18,6 +18,9 @@ import { usePaymentCardStore } from '../../store/paymentCardStore';
 import { useBookingStore } from '../../store/bookingStore';
 import type { ApiBooking } from '../../services/bookingApi';
 import { styles } from './styles';
+import Price from '../../components/ui/Price';
+import { useDisplayCurrency } from '../../store/currencyStore';
+import { formatMoney } from '../../utils/currency';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Payment'>;
 
@@ -46,6 +49,7 @@ export default function PaymentScreen({ navigation, route }: Props) {
   const pay = useBookingStore(state => state.pay);
 
   const [booking, setBooking] = useState<ApiBooking | null>(null);
+  const displayCurrency = useDisplayCurrency();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -130,7 +134,7 @@ export default function PaymentScreen({ navigation, route }: Props) {
         <View style={styles.summaryCard}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{booking.service.name}</Text>
-            <Text style={styles.summaryValue}>${booking.servicePrice}</Text>
+            <Price amount={booking.servicePrice} currency={booking.currency} style={styles.summaryValue} align="right" />
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Scheduled date</Text>
@@ -143,13 +147,13 @@ export default function PaymentScreen({ navigation, route }: Props) {
           {booking.discountAmount > 0 ? (
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Points discount</Text>
-              <Text style={styles.summaryDiscount}>-${booking.discountAmount}</Text>
+              <Price amount={booking.discountAmount} currency={booking.currency} style={styles.summaryDiscount} align="right" prefix="-" />
             </View>
           ) : null}
           <View style={styles.divider} />
           <View style={styles.summaryRow}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>${booking.totalAmount}</Text>
+            <Price amount={booking.totalAmount} currency={booking.currency} style={styles.totalValue} align="right" />
           </View>
         </View>
 
@@ -197,7 +201,7 @@ export default function PaymentScreen({ navigation, route }: Props) {
         {payError ? <ErrorBanner message={payError} /> : null}
 
         <PrimaryButton
-          label={submitting ? 'Processing…' : `Pay $${booking.totalAmount}`}
+          label={submitting ? 'Processing…' : `Pay ${formatMoney(booking.totalAmount, booking.currency, { displayCurrency })}`}
           onPress={handlePay}
           disabled={!canPay}
           loading={submitting}

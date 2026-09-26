@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { servicesApi, type ApiServiceListing } from '../../services/catalogApi';
+import { formatMoney } from '../../utils/currency';
 
 /** What the three booking steps need to know about a rental property. */
 export type RentalStay = {
@@ -10,6 +11,8 @@ export type RentalStay = {
   /** 0 when the vendor left it blank — the guest steppers then have no cap. */
   maxGuests: number;
   pricePerNight: number;
+  /** The listing's own currency — every amount below is in it. */
+  currency: string;
   /** Long-stay rates; null when the vendor set none. */
   pricePerWeek: number | null;
   pricePerMonth: number | null;
@@ -29,6 +32,7 @@ export function toRentalStay(l: ApiServiceListing): RentalStay {
     location: d.region || [l.store?.city, l.store?.state].filter(Boolean).join(', ') || '',
     maxGuests: Number(d.maxGuests ?? 0),
     pricePerNight: Number(d.pricePerNight ?? l.price ?? 0),
+    currency: l.currency || 'USD',
     pricePerWeek: d.pricePerWeek != null ? Number(d.pricePerWeek) : null,
     pricePerMonth: d.pricePerMonth != null ? Number(d.pricePerMonth) : null,
     cleaningFee: d.cleaningFee != null ? Number(d.cleaningFee) : null,
@@ -92,7 +96,7 @@ export function stayRate(
  * and service fees, a blank fee counting as 0. The booking endpoint computes
  * the same figure; this is only the preview.
  */
-export function stayPricing(property: RentalStay, nights: number) {
+export function stayPricing(property: RentalStay, nights: number, displayCurrency?: string) {
   const accommodation = stayRate(property, nights);
   const plain = cents(property.pricePerNight * nights);
   const cleaningFee = property.cleaningFee ?? 0;
@@ -102,7 +106,10 @@ export function stayPricing(property: RentalStay, nights: number) {
   const accommodationLabel =
     accommodation < plain
       ? `Accommodation · ${stayDuration(nights)}`
-      : `$${formatMoney(property.pricePerNight)} × ${nightsLabel(nights)}`;
+      : `${formatMoney(property.pricePerNight, property.currency, {
+          displayCurrency,
+          compact: true,
+        })} × ${nightsLabel(nights)}`;
   return {
     accommodation,
     accommodationLabel,
@@ -169,8 +176,4 @@ export function formatDateKey(key: string): string {
 
 export function nightsLabel(nights: number): string {
   return nights === 1 ? '1 night' : `${nights} nights`;
-}
-
-export function formatMoney(amount: number): string {
-  return Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 }

@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../styles';
 import type { ApiVendorService } from '../../../services/catalogApi';
 import { styles } from './StoreServiceCard.styles';
+import Price from '../../../components/ui/Price';
 
 type Props = {
   service: ApiVendorService;
@@ -54,7 +55,7 @@ export default function StoreServiceCard({
             {service.description}
           </Text>
         ) : null}
-        <Text style={styles.price}>${Math.round(price)}</Text>
+        <Price amount={Math.round(price)} currency={service.currency} style={styles.price} compact />
       </View>
     </TouchableOpacity>
   );

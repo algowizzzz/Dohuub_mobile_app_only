@@ -20,6 +20,8 @@ import { CircleCheckBig, Store } from 'lucide-react-native';
 import { styles } from '../Payment/styles';
 import { commerceStyles } from './styles';
 import { cartStyles } from './cartStyles';
+import Price from '../../components/ui/Price';
+import { useFormatMoney } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderPayment'>;
 
@@ -30,6 +32,8 @@ type Payable = {
   reference: string;
   orders: ApiCommerceOrder[];
   totalAmount: number;
+  /** What the card is charged in. */
+  currency: string;
   paid: boolean;
 };
 
@@ -39,6 +43,7 @@ const fromCheckout = (checkout: ApiCheckout): Payable => ({
   reference: checkout.reference,
   orders: checkout.orders || [],
   totalAmount: Number(checkout.totalAmount || 0),
+  currency: checkout.currency || checkout.orders?.[0]?.currency || 'USD',
   paid: checkout.status === 'paid' || checkout.paymentStatus === 'paid',
 });
 
@@ -48,6 +53,7 @@ const fromOrder = (order: ApiCommerceOrder): Payable => ({
   reference: order.reference,
   orders: [order],
   totalAmount: Number(order.totalAmount || 0),
+  currency: order.currency || 'USD',
   paid: order.paymentStatus === 'paid',
 });
 
@@ -70,6 +76,7 @@ export default function OrderPaymentScreen({ navigation, route }: Props) {
   const [pickingCard, setPickingCard] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
+  const formatPrice = useFormatMoney();
 
   /** An order that belongs to a checkout is paid through that checkout. */
   const fetchPayable = useCallback(async (): Promise<Payable> => {
@@ -179,12 +186,12 @@ export default function OrderPaymentScreen({ navigation, route }: Props) {
                     {o.reference} · {o.itemCount} item{o.itemCount === 1 ? '' : 's'}
                   </Text>
                 </View>
-                <Text style={cartStyles.itemTotal}>${Number(o.totalAmount).toFixed(2)}</Text>
+                <Price amount={o.totalAmount} currency={o.currency || payable.currency} style={cartStyles.itemTotal} align="right" />
               </TouchableOpacity>
             ))}
             <View style={[cartStyles.summaryRow, cartStyles.totalRow]}>
               <Text style={cartStyles.totalLabel}>Total paid</Text>
-              <Text style={cartStyles.totalValue}>${payable.totalAmount.toFixed(2)}</Text>
+              <Price amount={payable.totalAmount} currency={payable.currency} style={cartStyles.totalValue} align="right" />
             </View>
           </View>
           <PrimaryButton
@@ -363,7 +370,7 @@ export default function OrderPaymentScreen({ navigation, route }: Props) {
                 <Text style={styles.summaryLabel} numberOfLines={1}>
                   {o.store?.name || o.vendor?.businessName || 'Store'}
                 </Text>
-                <Text style={styles.summaryValue}>${Number(o.totalAmount).toFixed(2)}</Text>
+                <Price amount={o.totalAmount} currency={o.currency || payable.currency} style={styles.summaryValue} align="right" />
               </View>
             ))}
             <View style={styles.summaryRow}>
@@ -374,39 +381,33 @@ export default function OrderPaymentScreen({ navigation, route }: Props) {
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>${sum(orders, o => o.subtotal).toFixed(2)}</Text>
+              <Price amount={sum(orders, o => o.subtotal)} currency={payable.currency} style={styles.summaryValue} align="right" />
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>
-                ${sum(orders, o => o.deliveryFee).toFixed(2)}
-              </Text>
+<Price amount={sum(orders, o => o.deliveryFee)} currency={payable.currency} style={styles.summaryValue} align="right" />
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tax</Text>
-              <Text style={styles.summaryValue}>${sum(orders, o => o.taxAmount).toFixed(2)}</Text>
+              <Price amount={sum(orders, o => o.taxAmount)} currency={payable.currency} style={styles.summaryValue} align="right" />
             </View>
             {discountAmount > 0 ? (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Points Discount</Text>
-                <Text style={styles.summaryDiscount}>
-                  -${discountAmount.toFixed(2)}
-                </Text>
+<Price amount={discountAmount} currency={payable.currency} style={styles.summaryDiscount} align="right" prefix="-" />
               </View>
             ) : null}
             <View style={styles.divider} />
             <View style={styles.summaryRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={[styles.totalValue, { color: colors.primary }]}>
-                ${totalAmount.toFixed(2)}
-              </Text>
+<Price amount={totalAmount} currency={payable.currency} style={[styles.totalValue, { color: colors.primary }]} align="right" />
             </View>
           </View>
         </View>
 
         <PrimaryButton
           testID="checkout-pay"
-          label={`Place Order • $${totalAmount.toFixed(2)}`}
+          label={`Place Order • ${formatPrice(totalAmount, payable.currency)}`}
           loading={submitting}
           disabled={!selectedCardId}
           onPress={runPay}

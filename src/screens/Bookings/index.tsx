@@ -18,6 +18,7 @@ import BookingCard from './components/BookingCard';
 import { DATE_GROUP_ORDER, getDateGroup } from './dateGroups';
 import { styles } from './styles';
 import { commerceStyles, ORDER_STATUS_META } from '../Commerce/styles';
+import { useFormatMoney } from '../../store/currencyStore';
 
 const FILTER_STATUS_MAP: Record<FilterKey, ApiBookingStatus[]> = {
   all: ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'rejected', 'refunded'],
@@ -38,6 +39,7 @@ export default function BookingsScreen() {
   const ordersLoading = useCommerceStore(state => state.ordersLoading);
   const loadOrders = useCommerceStore(state => state.loadOrders);
   const [mode, setMode] = useState<'bookings' | 'orders'>('bookings');
+  const formatPrice = useFormatMoney();
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
 
   useFocusEffect(
@@ -142,7 +144,7 @@ export default function BookingsScreen() {
                       {order.store?.name || order.vendor?.businessName || 'Order'}
                     </Text>
                     <Text style={commerceStyles.orderMeta}>
-                      {order.reference} · ${Number(order.totalAmount).toFixed(2)}
+                      {order.reference} · {formatPrice(order.totalAmount, order.currency)}
                       {order.checkoutId &&
                       orders.filter(o => o.checkoutId === order.checkoutId).length > 1
                         ? ' · Multi-store checkout'

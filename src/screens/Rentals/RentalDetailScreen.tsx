@@ -41,6 +41,8 @@ import WishlistHeart from '../../components/commerce/WishlistHeart';
 import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
 import ReviewPhotos from '../../components/ui/ReviewPhotos';
+import Price from '../../components/ui/Price';
+import { pointsRateText } from '../../components/ui/EarnPointsCard';
 import { servicesApi, type ApiServiceListing } from '../../services/catalogApi';
 import { reviewsApi, type ApiReview } from '../../services/reviewApi';
 import { requireAuth } from '../../hooks/useRequireAuth';
@@ -64,6 +66,8 @@ type PropertyDetail = {
   areaUnit: string;
   type: string;
   price: number;
+  currency: string;
+  pointsPerDollar: number;
   pricePerWeek: number | null;
   pricePerMonth: number | null;
   cleaningFee: number | null;
@@ -96,6 +100,8 @@ function toDetail(l: ApiServiceListing): PropertyDetail {
     areaUnit: d.totalAreaUnit === 'sqm' ? 'm²' : 'ft²',
     type: d.propertyType || 'Property',
     price: Number(d.pricePerNight ?? l.price ?? 0),
+    currency: l.currency || 'USD',
+    pointsPerDollar: Number(l.pointsPerDollar) || 0,
     pricePerWeek: d.pricePerWeek != null ? Number(d.pricePerWeek) : null,
     pricePerMonth: d.pricePerMonth != null ? Number(d.pricePerMonth) : null,
     cleaningFee: d.cleaningFee != null ? Number(d.cleaningFee) : null,
@@ -300,7 +306,7 @@ export default function RentalDetailScreen({ navigation, route }: Props) {
               <View style={styles.fill}>
                 <Text style={styles.pointsTitle}>Earn points on this booking</Text>
                 <Text style={styles.pointsBody}>
-                  1 point per $1 spent • Points added after checkout
+                  {pointsRateText(p.pointsPerDollar, p.currency)} • Points added after checkout
                 </Text>
               </View>
             </GradientBox>
@@ -347,19 +353,19 @@ export default function RentalDetailScreen({ navigation, route }: Props) {
             <Text style={[styles.sectionTitle, styles.pricingTitle]}>Pricing</Text>
             <View style={styles.priceRow}>
               <Text style={styles.priceLabel}>Per Night</Text>
-              <Text style={styles.priceValue}>${p.price}</Text>
+              <Price amount={p.price} currency={p.currency} style={styles.priceValue} align="right" compact />
             </View>
             {/* Long-stay rates are optional; only the ones the vendor set show. */}
             {p.pricePerWeek != null ? (
               <View style={styles.priceRow}>
                 <Text style={styles.priceLabel}>Per Week</Text>
-                <Text style={styles.priceValueDark}>${p.pricePerWeek}</Text>
+                <Price amount={p.pricePerWeek} currency={p.currency} style={styles.priceValueDark} align="right" compact />
               </View>
             ) : null}
             {p.pricePerMonth != null ? (
               <View style={styles.priceRow}>
                 <Text style={styles.priceLabel}>Per Month</Text>
-                <Text style={styles.priceValueDark}>${p.pricePerMonth}</Text>
+                <Price amount={p.pricePerMonth} currency={p.currency} style={styles.priceValueDark} align="right" compact />
               </View>
             ) : null}
             {/* Fees are optional per property; a blank one shows nothing rather
@@ -367,13 +373,13 @@ export default function RentalDetailScreen({ navigation, route }: Props) {
             {p.cleaningFee != null ? (
               <View style={styles.priceRow}>
                 <Text style={styles.priceLabel}>Cleaning Fee</Text>
-                <Text style={styles.priceValueDark}>${p.cleaningFee}</Text>
+                <Price amount={p.cleaningFee} currency={p.currency} style={styles.priceValueDark} align="right" compact />
               </View>
             ) : null}
             {p.serviceFee != null ? (
               <View style={styles.priceRow}>
                 <Text style={styles.priceLabel}>Service Fee</Text>
-                <Text style={styles.priceValueDark}>${p.serviceFee}</Text>
+                <Price amount={p.serviceFee} currency={p.currency} style={styles.priceValueDark} align="right" compact />
               </View>
             ) : null}
           </GradientBox>

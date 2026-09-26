@@ -11,6 +11,7 @@ import { colors } from '../../styles';
 import { useCommerceStore } from '../../store/commerceStore';
 import type { ApiCommerceOrder } from '../../services/commerceApi';
 import { commerceStyles as styles, ORDER_STATUS_LABEL } from './styles';
+import Price from '../../components/ui/Price';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
@@ -80,7 +81,7 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
               <Text style={styles.summaryLabel}>
                 {item.quantity}× {item.name}
               </Text>
-              <Text style={styles.summaryValue}>${Number(item.lineTotal).toFixed(2)}</Text>
+              <Price amount={item.lineTotal} currency={order.currency} style={styles.summaryValue} align="right" />
             </View>
           ))}
         </View>
@@ -88,21 +89,19 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
         <View style={styles.card}>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>${Number(order.subtotal).toFixed(2)}</Text>
+            <Price amount={order.subtotal} currency={order.currency} style={styles.summaryValue} align="right" />
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Delivery</Text>
-            <Text style={styles.summaryValue}>${Number(order.deliveryFee).toFixed(2)}</Text>
+            <Price amount={order.deliveryFee} currency={order.currency} style={styles.summaryValue} align="right" />
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Tax</Text>
-            <Text style={styles.summaryValue}>${Number(order.taxAmount).toFixed(2)}</Text>
+            <Price amount={order.taxAmount} currency={order.currency} style={styles.summaryValue} align="right" />
           </View>
           <View style={[styles.summaryRow, styles.summaryTotal, { marginBottom: 0 }]}>
             <Text style={{ fontWeight: '700', color: colors.text }}>Total</Text>
-            <Text style={{ fontWeight: '700', color: colors.text }}>
-              ${Number(order.totalAmount).toFixed(2)}
-            </Text>
+<Price amount={order.totalAmount} currency={order.currency} style={{ fontWeight: '700', color: colors.text }} align="right" />
           </View>
         </View>
 

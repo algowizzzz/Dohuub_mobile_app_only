@@ -53,12 +53,14 @@ import {
 } from './bookingStyles';
 import {
   formatDateKey,
-  formatMoney,
   nightsBetween,
   stayDuration,
   stayPricing,
   useRentalStay,
 } from './rentalBooking';
+import Price from '../../components/ui/Price';
+import { pointsRateText } from '../../components/ui/EarnPointsCard';
+import { useDisplayCurrency, useFormatMoney } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RentalConfirm'>;
 
@@ -117,6 +119,8 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
   const [confirmed, setConfirmed] = useState<ApiBooking | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const displayCurrency = useDisplayCurrency();
+  const formatPrice = useFormatMoney();
 
   // Refresh on focus so an address or card added on the way back shows up.
   useFocusEffect(
@@ -156,7 +160,9 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
   const nights = nightsBetween(checkIn, checkOut);
   const guests = adults + children;
   const { accommodation, accommodationLabel, cleaningFee, serviceFee, subtotal } =
-    stayPricing(property, nights);
+    stayPricing(property, nights, displayCurrency);
+  // Charged in the listing's currency; a created booking carries its own.
+  const currency = pendingBooking?.currency || property.currency;
 
   // Same address rule as checkout: the one picked for this session, else the
   // default, else the first saved address.
@@ -187,7 +193,8 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
     ? Number(pendingBooking.totalAmount)
     : Math.max(0, subtotal - discount);
   const pointsUsed = pendingBooking ? Number(pendingBooking.pointsRedeemed || 0) : pointsToRedeem;
-  const pointsToEarn = powered ? Math.floor(total * property.pointsPerDollar) : 0;
+  const earnRate = property.pointsPerDollar > 0 ? property.pointsPerDollar : 1;
+  const pointsToEarn = powered ? Math.floor(total * earnRate) : 0;
 
   const canConfirm = !!address && !!selectedCardId && !submitting;
 
@@ -414,7 +421,7 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
                     <Text style={styles.pointsUsingLabel}>Using:</Text>
                     <View style={styles.row}>
                       <Text style={styles.pointsUsingValue}>{pointsUsed.toLocaleString()} pts</Text>
-                      <Text style={styles.pointsUsingDiscount}>-${discount.toFixed(2)}</Text>
+                      <Price amount={discount} currency={currency} style={styles.pointsUsingDiscount} align="right" prefix="-" />
                     </View>
                   </View>
                   <View style={styles.rowBetween}>
@@ -437,33 +444,37 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
             {/* Both fees always show, as $0 when the vendor left them blank. */}
             <View style={styles.rowBetweenBaseline}>
               <Text style={styles.textMuted}>{accommodationLabel}</Text>
-              <Text style={styles.text}>${formatMoney(accommodation)}</Text>
+              <Price amount={accommodation} currency={currency} style={styles.text} align="right" compact />
             </View>
             <View style={styles.rowBetweenBaseline}>
               <Text style={styles.textMuted}>Cleaning fee</Text>
-              <Text style={styles.text}>${formatMoney(cleaningFee)}</Text>
+              <Price amount={cleaningFee} currency={currency} style={styles.text} align="right" compact />
             </View>
             <View style={styles.rowBetweenBaseline}>
               <Text style={styles.textMuted}>Service fee</Text>
-              <Text style={styles.text}>${formatMoney(serviceFee)}</Text>
+              <Price amount={serviceFee} currency={currency} style={styles.text} align="right" compact />
             </View>
             <View style={[styles.tealDividerSm, styles.rowBetweenBaseline]}>
               <Text style={styles.textMuted}>Subtotal</Text>
-              <Text style={styles.text}>
-                ${formatMoney(pendingBooking ? Number(pendingBooking.servicePrice) : subtotal)}
-              </Text>
+              <Price
+                amount={pendingBooking ? Number(pendingBooking.servicePrice) : subtotal}
+                currency={currency}
+                style={styles.text}
+                align="right"
+                compact
+              />
             </View>
             {discount > 0 ? (
               <View style={styles.rowBetweenBaseline}>
                 <Text style={styles.discountText}>
                   Points Discount ({pointsUsed.toLocaleString()} pts)
                 </Text>
-                <Text style={styles.discountText}>-${discount.toFixed(2)}</Text>
+                <Price amount={discount} currency={currency} style={styles.discountText} align="right" prefix="-" />
               </View>
             ) : null}
             <View style={[styles.tealDividerSm, styles.rowBetweenBaseline]}>
               <Text style={styles.text}>Total</Text>
-              <Text style={styles.totalValue2xl}>${total.toFixed(2)}</Text>
+              <Price amount={total} currency={currency} style={styles.totalValue2xl} align="right" />
             </View>
           </View>
         </View>
@@ -480,8 +491,7 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
               <Text style={styles.earnValue}>+{pointsToEarn} pts</Text>
             </View>
             <Text style={styles.earnSub}>
-              {property.pointsPerDollar} {property.pointsPerDollar === 1 ? 'point' : 'points'} per $1
-              spent • Added after stay
+              {pointsRateText(property.pointsPerDollar, currency)} • Added after stay
             </Text>
           </View>
         ) : null}
@@ -490,7 +500,7 @@ export default function RentalConfirmScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <BookingFooter
-        label={`Confirm & Pay $${total.toFixed(2)}`}
+        label={`Confirm & Pay ${formatPrice(total, currency)}`}
         onPress={handleConfirm}
         disabled={!canConfirm}
         loading={submitting}

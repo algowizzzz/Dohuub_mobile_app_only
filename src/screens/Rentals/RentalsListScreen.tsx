@@ -26,6 +26,9 @@ import LoadingState from '../../components/ui/LoadingState';
 import ErrorState from '../../components/ui/ErrorState';
 import { servicesApi, type ApiRentalTerm, type ApiServiceListing } from '../../services/catalogApi';
 import { getNearMeCoords } from '../../utils/nearMe';
+import Price from '../../components/ui/Price';
+import { useCurrencyStore, useFormatMoney } from '../../store/currencyStore';
+import { convertAmount } from '../../utils/currency';
 import { normalizeRentalTerms, RENTAL_TERMS, rentalTermSpacing, RentalTermPills } from './rentalTerms';
 import { styles } from './styles';
 
@@ -43,6 +46,7 @@ export type RentalProperty = {
   baths: number;
   type: string;
   price: number;
+  currency: string;
   poweredByDoHuub: boolean;
   rentalTerms: ApiRentalTerm[];
 };
@@ -63,6 +67,7 @@ export function toProperty(l: ApiServiceListing): RentalProperty {
     baths: Number(d.bathrooms ?? 0),
     type: d.propertyType || 'Property',
     price: Number(d.pricePerNight ?? l.price ?? 0),
+    currency: l.currency || 'USD',
     poweredByDoHuub: Boolean(l.vendor?.poweredByDoHuub),
     rentalTerms: normalizeRentalTerms(d.rentalTerms),
   };
@@ -106,6 +111,8 @@ export default function RentalsListScreen({ navigation }: Props) {
   const [baths, setBaths] = useState('Any');
   const [price, setPrice] = useState('Any');
   const [term, setTerm] = useState<'all' | ApiRentalTerm>('all');
+  const rates = useCurrencyStore(state => state.rates);
+  const formatPrice = useFormatMoney();
 
   // The rental type is filtered by the API (`rentalTerm`), and the list is
   // limited to properties near the selected / default address like the PWA.
@@ -144,8 +151,10 @@ export default function RentalsListScreen({ navigation }: Props) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return items
-      .filter(p => {
+    // Price bands are in USD; other currencies are compared at today's rate.
+    const usd = (p: RentalProperty) => convertAmount(p.price, p.currency, 'USD', rates) ?? p.price;
+    // Order comes from the API (Powered by DoHuub first), so no re-sort here.
+    return items.filter(p => {
         if (q && !p.name.toLowerCase().includes(q) && !p.location.toLowerCase().includes(q)) {
           return false;
         }
@@ -156,15 +165,14 @@ export default function RentalsListScreen({ navigation }: Props) {
         if (baths !== 'Any' && (baths === '3+' ? p.baths < 3 : p.baths !== Number(baths))) {
           return false;
         }
-        if (price === 'Under $100' && p.price >= 100) return false;
-        if (price === '$100-$200' && (p.price < 100 || p.price > 200)) return false;
-        if (price === '$200-$300' && (p.price < 200 || p.price > 300)) return false;
-        if (price === 'Over $300' && p.price <= 300) return false;
+        const nightly = usd(p);
+        if (price === 'Under $100' && nightly >= 100) return false;
+        if (price === '$100-$200' && (nightly < 100 || nightly > 200)) return false;
+        if (price === '$200-$300' && (nightly < 200 || nightly > 300)) return false;
+        if (price === 'Over $300' && nightly <= 300) return false;
         return true;
-      })
-      // Powered by DoHuub properties lead, as in the design.
-      .sort((a, b) => Number(b.poweredByDoHuub) - Number(a.poweredByDoHuub));
-  }, [items, search, term, type, beds, baths, price]);
+      });
+  }, [items, search, term, type, beds, baths, price, rates]);
 
   const clearFilters = () => {
     setTerm('all');
@@ -229,7 +237,7 @@ export default function RentalsListScreen({ navigation }: Props) {
       style={styles.card}
       onPress={() => navigation.navigate('RentalDetail', { propertyId: item.id })}
       accessibilityRole="button"
-      accessibilityLabel={`${item.name}, ${item.beds} bed, $${item.price} per night`}
+      accessibilityLabel={`${item.name}, ${item.beds} bed, ${formatPrice(item.price, item.currency, { compact: true })} per night`}
     >
       <View style={styles.imageWrap}>
         {item.image ? (
@@ -287,10 +295,13 @@ export default function RentalsListScreen({ navigation }: Props) {
 
         <RentalTermPills terms={item.rentalTerms} style={rentalTermSpacing.card} />
 
-        <Text style={styles.price}>
-          ${item.price}
-          <Text style={styles.priceUnit}> / night</Text>
-        </Text>
+        <Price
+          amount={item.price}
+          currency={item.currency}
+          style={styles.price}
+          compact
+          suffix={<Text style={styles.priceUnit}> / night</Text>}
+        />
       </View>
     </Pressable>
   );

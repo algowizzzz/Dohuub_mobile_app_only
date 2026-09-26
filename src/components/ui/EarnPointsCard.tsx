@@ -5,7 +5,19 @@ import { styles } from './EarnPointsCard.styles';
 
 type Props = {
   pointsPerDollar?: number | null;
+  /** The listing's currency; points accrue per 1 unit of it. */
+  currency?: string | null;
+  title?: string;
+  note?: string;
 };
+
+/** "1 point per $1" for USD, "2 points per 1 JMD" otherwise; rate falls back to 1. */
+export function pointsRateText(pointsPerDollar?: number | null, currency?: string | null): string {
+  const rate = pointsPerDollar && pointsPerDollar > 0 ? pointsPerDollar : 1;
+  const unit = rate === 1 ? 'point' : 'points';
+  const code = (currency || 'USD').toUpperCase();
+  return code === 'USD' ? `${rate} ${unit} per $1 spent` : `${rate} ${unit} per 1 ${code} spent`;
+}
 
 function GiftOutline({ size = 20, color = '#B45309' }: { size?: number; color?: string }) {
   return (
@@ -30,9 +42,13 @@ function GiftOutline({ size = 20, color = '#B45309' }: { size?: number; color?: 
   );
 }
 
-export default function EarnPointsCard({ pointsPerDollar }: Props) {
-  const rate = pointsPerDollar && pointsPerDollar > 0 ? pointsPerDollar : 1;
-  const unit = rate === 1 ? 'point' : 'points';
+/** Only render for Powered by DoHuub vendors — other purchases don't earn points. */
+export default function EarnPointsCard({
+  pointsPerDollar,
+  currency,
+  title = 'Earn points on this service',
+  note = 'Points added after service completion',
+}: Props) {
 
   return (
     <View style={styles.card}>
@@ -40,9 +56,9 @@ export default function EarnPointsCard({ pointsPerDollar }: Props) {
         <GiftOutline />
       </View>
       <View style={styles.textCol}>
-        <Text style={styles.title}>Earn points on this service</Text>
+        <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>
-          {rate} {unit} per $1 spent • Points added after service completion
+          {pointsRateText(pointsPerDollar, currency)} • {note}
         </Text>
       </View>
     </View>

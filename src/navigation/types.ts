@@ -65,6 +65,8 @@ export type RootStackParamList = {
   EditProfile: undefined;
   BookingDetail: { bookingId: string };
   LeaveReview: { bookingId: string };
+  /** Profile → Display currency; open to guests too. */
+  CurrencyPicker: undefined;
 };
 
 declare global {

@@ -84,6 +84,9 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     gap: 8,
   },
+  priceWrap: {
+    flexShrink: 1,
+  },
   price: {
     fontFamily: fontFamily.medium,
     fontSize: 15,

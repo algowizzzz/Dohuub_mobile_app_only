@@ -50,6 +50,7 @@ import RentalDetailScreen from '../screens/Rentals/RentalDetailScreen';
 import RentalDatesScreen from '../screens/Rentals/RentalDatesScreen';
 import RentalStayDetailsScreen from '../screens/Rentals/RentalStayDetailsScreen';
 import RentalConfirmScreen from '../screens/Rentals/RentalConfirmScreen';
+import CurrencyPickerScreen from '../screens/CurrencyPicker';
 
 // Account-only screens. Entry points gate with requireAuth(); these guards
 // catch anything that slips past (deep links, missed buttons).
@@ -130,6 +131,7 @@ export default function RootNavigator() {
       <Stack.Screen name="EditProfile" component={guarded.EditProfile} options={mainAppScreenOptions} />
       <Stack.Screen name="BookingDetail" component={guarded.BookingDetail} options={mainAppScreenOptions} />
       <Stack.Screen name="LeaveReview" component={guarded.LeaveReview} options={mainAppScreenOptions} />
+      <Stack.Screen name="CurrencyPicker" component={CurrencyPickerScreen} options={mainAppScreenOptions} />
     </Stack.Navigator>
   );
 }

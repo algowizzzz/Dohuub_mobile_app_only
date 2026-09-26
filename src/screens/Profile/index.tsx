@@ -16,6 +16,7 @@ import ProfileCard from './components/ProfileCard';
 import MenuRow from './components/MenuRow';
 import DangerRow from './components/DangerRow';
 import GuestProfileCard from './components/GuestProfileCard';
+import DisplayCurrencyRow from './components/DisplayCurrencyRow';
 import { requireAuth, useIsSignedIn } from '../../hooks/useRequireAuth';
 import { styles } from './styles';
 
@@ -91,6 +92,7 @@ function GuestProfile() {
               navigation.navigate('PaymentMethods'),
             )}
           />
+          <DisplayCurrencyRow onPress={() => navigation.navigate('CurrencyPicker')} />
           <MenuRow
             icon="help-circle-outline"
             label="Help & Support"
@@ -231,6 +233,7 @@ function SignedInProfile() {
             label="Payment Methods"
             onPress={() => navigation.navigate('PaymentMethods')}
           />
+          <DisplayCurrencyRow onPress={() => navigation.navigate('CurrencyPicker')} />
           <MenuRow
             icon="notifications-outline"
             label="Notifications"

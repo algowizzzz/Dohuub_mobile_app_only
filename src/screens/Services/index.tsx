@@ -84,13 +84,17 @@ export default function ServicesScreen({ navigation, route }: Props) {
       );
     }
 
+    // The API lists Powered by DoHuub vendors first; every sort keeps that
+    // grouping and only orders within it.
+    const poweredFirst = (a: (typeof list)[number], b: (typeof list)[number]) =>
+      Number(Boolean(b.poweredByDoHuub)) - Number(Boolean(a.poweredByDoHuub));
     switch (sortKey) {
       case 'top_rated':
-        return [...list].sort((a, b) => b.ratingAverage - a.ratingAverage);
+        return [...list].sort((a, b) => poweredFirst(a, b) || b.ratingAverage - a.ratingAverage);
       case 'price_low':
-        return [...list].sort((a, b) => a.minPrice - b.minPrice);
+        return [...list].sort((a, b) => poweredFirst(a, b) || a.minPrice - b.minPrice);
       case 'price_high':
-        return [...list].sort((a, b) => b.minPrice - a.minPrice);
+        return [...list].sort((a, b) => poweredFirst(a, b) || b.minPrice - a.minPrice);
       default:
         return list;
     }

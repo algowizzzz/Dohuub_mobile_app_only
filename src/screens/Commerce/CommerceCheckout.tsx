@@ -24,10 +24,13 @@ import { cartStoreKey, useCommerceStore } from '../../store/commerceStore';
 import { useRewardsStore } from '../../store/rewardsStore';
 import type { ApiCart, ApiCheckoutPreview, ProductKind } from '../../services/commerceApi';
 import { cartStyles as styles } from './cartStyles';
+import Price from '../../components/ui/Price';
+import { useFormatMoney } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CommerceCheckout'>;
 
-const money = (value: unknown) => `$${(Number(value) || 0).toFixed(2)}`;
+/** Every line in a store cart is priced in that store's currency. */
+const cartCurrency = (cart?: ApiCart | null) => cart?.items[0]?.product?.currency || 'USD';
 
 /**
  * The customer's cart across every store, grouped per store with its own
@@ -110,6 +113,8 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
   const taxAmount = Number(quote?.taxAmount ?? 0);
   const pointsDiscount = Number(quote?.pointsDiscount ?? 0);
   const total = Number(quote?.totalAmount ?? subtotal + deliveryFee);
+  const currency = quote?.currency || cartCurrency(carts[0]);
+  const formatPrice = useFormatMoney();
 
   const changeQty = async (productId: string, next: number) => {
     setBusyId(productId);
@@ -286,6 +291,7 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
             const productKind = cart.items[0]?.product?.kind as ProductKind | undefined;
             const storeSubtotal = Number(group?.subtotal ?? cart.subtotal);
             const storeDelivery = deliveryFor(cart);
+            const storeCurrency = cartCurrency(cart);
             return (
               <View key={cart.id} style={styles.card} testID={`cart-store-${storeId}`}>
                 <View style={styles.storeHead}>
@@ -353,10 +359,12 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
                         <Text style={styles.itemName} numberOfLines={2}>
                           {product?.name || 'Item'}
                         </Text>
-                        <Text style={styles.itemUnit}>
-                          {money(item.unitPrice)}
-                          {product?.unitLabel ? ` · ${product.unitLabel}` : ''}
-                        </Text>
+                        <Price
+                          amount={item.unitPrice}
+                          currency={product?.currency || storeCurrency}
+                          style={styles.itemUnit}
+                          suffix={product?.unitLabel ? ` · ${product.unitLabel}` : ''}
+                        />
                         <View style={styles.qty}>
                           <TouchableOpacity
                             testID={`cart-item-dec-${item.productId}`}
@@ -380,7 +388,7 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
                         </View>
                       </View>
                       <View style={styles.itemSide}>
-                        <Text style={styles.itemTotal}>{money(item.lineTotal)}</Text>
+                        <Price amount={item.lineTotal} currency={product?.currency || storeCurrency} style={styles.itemTotal} align="right" />
                         <TouchableOpacity
                           testID={`cart-item-remove-${item.productId}`}
                           hitSlop={8}
@@ -397,21 +405,21 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
                 <View style={styles.storeTotals}>
                   <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>Subtotal</Text>
-                    <Text style={styles.summaryValue}>{money(storeSubtotal)}</Text>
+                    <Price amount={storeSubtotal} currency={storeCurrency} style={styles.summaryValue} align="right" />
                   </View>
                   <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>Delivery fee</Text>
-                    <Text style={styles.summaryValue}>{money(storeDelivery)}</Text>
+                    <Price amount={storeDelivery} currency={storeCurrency} style={styles.summaryValue} align="right" />
                   </View>
                   {group ? (
                     <>
                       <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Tax</Text>
-                        <Text style={styles.summaryValue}>{money(group.taxAmount)}</Text>
+                        <Price amount={group.taxAmount} currency={storeCurrency} style={styles.summaryValue} align="right" />
                       </View>
                       <View style={styles.summaryRow}>
                         <Text style={styles.storeSubtotalLabel}>Store total</Text>
-                        <Text style={styles.storeSubtotalValue}>{money(group.total)}</Text>
+                        <Price amount={group.total} currency={storeCurrency} style={styles.storeSubtotalValue} align="right" />
                       </View>
                     </>
                   ) : null}
@@ -436,31 +444,39 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
             <Text style={styles.sectionTitle}>Price Details</Text>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>{money(subtotal)}</Text>
+              <Price amount={subtotal} currency={currency} style={styles.summaryValue} align="right" />
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>
                 Delivery fee{carts.length > 1 ? ` (${carts.length} stores)` : ''}
               </Text>
-              <Text style={styles.summaryValue}>{money(deliveryFee)}</Text>
+              <Price amount={deliveryFee} currency={currency} style={styles.summaryValue} align="right" />
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tax</Text>
-              <Text style={styles.summaryValue}>{quote ? money(taxAmount) : '—'}</Text>
+              {quote ? (
+                <Price amount={taxAmount} currency={currency} style={styles.summaryValue} align="right" />
+              ) : (
+                <Text style={styles.summaryValue}>—</Text>
+              )}
             </View>
             {pointsDiscount > 0 ? (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>
                   Points discount ({Number(quote?.pointsToRedeem || 0).toLocaleString()} pts)
                 </Text>
-                <Text style={styles.summaryDiscount}>-{money(pointsDiscount)}</Text>
+                <Price amount={pointsDiscount} currency={currency} style={styles.summaryDiscount} align="right" prefix="-" />
               </View>
             ) : null}
             <View style={[styles.summaryRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue} testID="cart-total">
-                {money(total)}
-              </Text>
+              <Price
+                amount={total}
+                currency={currency}
+                style={styles.totalValue}
+                align="right"
+                testID="cart-total"
+              />
             </View>
             {!quote && addressId ? (
               <Text style={styles.note}>Calculating tax and fees…</Text>
@@ -477,7 +493,7 @@ export default function CommerceCheckoutScreen({ navigation, route }: Props) {
 
           <PrimaryButton
             testID="checkout-continue"
-            label={`Continue to payment · ${money(total)}`}
+            label={`Continue to payment · ${formatPrice(total, currency)}`}
             loading={submitting}
             disabled={!addressId || busyId !== null}
             onPress={proceed}

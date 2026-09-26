@@ -15,11 +15,10 @@ import { useWishlistStore } from '../../store/wishlistStore';
 import { useCommerceStore } from '../../store/commerceStore';
 import { isRentalListing } from '../../services/catalogApi';
 import type { ApiWishlistItem } from '../../services/wishlistApi';
+import Price from '../../components/ui/Price';
 import { styles } from './styles';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ShoppingList'>;
-
-const money = (value: unknown) => `$${(Number(value) || 0).toFixed(2)}`;
 
 /** Saved products and services ("Shopping List"), opened from Profile. */
 export default function ShoppingListScreen({ navigation }: Props) {
@@ -174,12 +173,17 @@ export default function ShoppingListScreen({ navigation }: Props) {
                     </Text>
                   ) : null}
                   <View style={styles.footer}>
-                    <Text style={styles.price}>
-                      {money(price)}
-                      {product.unitLabel ? (
-                        <Text style={styles.priceUnit}> / {product.unitLabel}</Text>
-                      ) : null}
-                    </Text>
+                    <Price
+                      amount={price}
+                      currency={product.currency}
+                      style={styles.price}
+                      containerStyle={styles.priceWrap}
+                      suffix={
+                        product.unitLabel ? (
+                          <Text style={styles.priceUnit}> / {product.unitLabel}</Text>
+                        ) : null
+                      }
+                    />
                     {out ? (
                       <Text style={styles.outText}>Out of stock</Text>
                     ) : inCart > 0 ? (
@@ -257,14 +261,19 @@ export default function ShoppingListScreen({ navigation }: Props) {
                       .join(' · ')}
                   </Text>
                   <View style={styles.footer}>
-                    <Text style={styles.price}>
-                      {money(price)}
-                      {rental ? (
-                        <Text style={styles.priceUnit}> / night</Text>
-                      ) : service.pricingType === 'hourly' ? (
-                        <Text style={styles.priceUnit}> / hour</Text>
-                      ) : null}
-                    </Text>
+                    <Price
+                      amount={price}
+                      currency={service.currency}
+                      style={styles.price}
+                      containerStyle={styles.priceWrap}
+                      suffix={
+                        rental ? (
+                          <Text style={styles.priceUnit}> / night</Text>
+                        ) : service.pricingType === 'hourly' ? (
+                          <Text style={styles.priceUnit}> / hour</Text>
+                        ) : null
+                      }
+                    />
                     <TouchableOpacity
                       testID={`shopping-list-open-${service.id}`}
                       style={styles.softBtn}

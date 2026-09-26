@@ -32,12 +32,16 @@ import { useServiceAvailability } from './useServiceAvailability';
 import { ApiError } from '../../services/ApiError';
 import ErrorBanner from '../../components/ui/ErrorBanner';
 import { styles } from './styles';
+import Price from '../../components/ui/Price';
+import { pointsRateText } from '../../components/ui/EarnPointsCard';
+import { useFormatMoney } from '../../store/currencyStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookService'>;
 
 export default function BookServiceScreen({ navigation, route }: Props) {
   const getVendor = useCatalogStore(state => state.getVendor);
   const [vendor, setVendor] = useState<ApiVendorDetail | null>(null);
+  const formatPrice = useFormatMoney();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,7 +109,8 @@ export default function BookServiceScreen({ navigation, route }: Props) {
   // non-powered vendor with code NOT_POWERED_BY_DOHUUB, so this gate must
   // match the PWA's isPoweredByDohuub(vendor) exactly.
   const powered = vendor.poweredByDoHuub === true;
-  const pointsToEarn = powered ? Math.round(price * service.pointsPerDollar) : 0;
+  const earnRate = service.pointsPerDollar > 0 ? service.pointsPerDollar : 1;
+  const pointsToEarn = powered ? Math.round(price * earnRate) : 0;
   const availablePoints = powered ? balance?.balance ?? 0 : 0;
   const redeemDiscount = redeemPoints
     ? Math.floor(availablePoints / (balance?.conversion.pointsPerCurrencyUnit ?? 100))
@@ -158,16 +163,20 @@ export default function BookServiceScreen({ navigation, route }: Props) {
             <View style={styles.summaryInfo}>
               <Text style={styles.summaryName}>{service.name}</Text>
               <Text style={styles.summaryVendor}>{vendor.businessName}</Text>
-              <Text style={styles.summaryPrice}>
-                ${price} · {formatDurationMinutes(service.serviceTimeInMinutes)}
-              </Text>
+              <Price
+                amount={price}
+                currency={service.currency}
+                style={styles.summaryPrice}
+                compact
+                suffix={` · ${formatDurationMinutes(service.serviceTimeInMinutes)}`}
+              />
             </View>
           </View>
 
           <Text style={styles.label}>Service</Text>
           <PickerRow
             icon="sparkles-outline"
-            value={`${service.name} — $${price}`}
+            value={`${service.name} — ${formatPrice(price, service.currency, { compact: true })}`}
             placeholder="Choose a service"
             onPress={() => {}}
             disabled
@@ -223,7 +232,7 @@ export default function BookServiceScreen({ navigation, route }: Props) {
             textAlignVertical="top"
           />
 
-          {powered && service.pointsPerDollar > 0 ? (
+          {powered ? (
             <View style={styles.pointsBox}>
               <View style={styles.pointsBoxHeader}>
                 <View style={styles.pointsIconWrap}>
@@ -233,7 +242,8 @@ export default function BookServiceScreen({ navigation, route }: Props) {
                 <Text style={styles.pointsBoxValue}>+{pointsToEarn} pts</Text>
               </View>
               <Text style={styles.pointsBoxSubtitle}>
-                {service.pointsPerDollar} points per $1 spent · added after the service is completed
+                {pointsRateText(service.pointsPerDollar, service.currency)} · added after the service is
+                completed
               </Text>
             </View>
           ) : null}
@@ -252,7 +262,7 @@ export default function BookServiceScreen({ navigation, route }: Props) {
                   Spend {availablePoints.toLocaleString()} points on this booking
                 </Text>
                 <Text style={styles.redeemSubtitle}>
-                  Takes ${redeemDiscount} off. You have {availablePoints.toLocaleString()} points.
+                  Takes {formatPrice(redeemDiscount, service.currency, { compact: true })} off. You have {availablePoints.toLocaleString()} points.
                 </Text>
               </View>
             </TouchableOpacity>
@@ -261,7 +271,7 @@ export default function BookServiceScreen({ navigation, route }: Props) {
           <View style={styles.priceSummaryCard}>
             <View style={styles.priceSummaryRow}>
               <Text style={styles.priceSummaryLabel}>Service Price</Text>
-              <Text style={styles.priceSummaryValue}>${price}</Text>
+              <Price amount={price} currency={service.currency} style={styles.priceSummaryValue} align="right" compact />
             </View>
             <Text style={styles.priceSummaryNote}>
               The final total is calculated when the booking is created.
