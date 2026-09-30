@@ -150,7 +150,8 @@ export default function CommerceStoresScreen({ navigation, route }: Props) {
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.softBtn}
-                      onPress={() => navigation.navigate('Vendor', { vendorId: store.id })}
+                      // Rows are stores; the profile screen looks up the owning vendor account.
+                      onPress={() => navigation.navigate('Vendor', { vendorId: store.vendorId || store.id })}
                     >
                       <Text style={styles.softBtnText}>View Profile</Text>
                     </TouchableOpacity>
