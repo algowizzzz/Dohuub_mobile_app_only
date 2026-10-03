@@ -1,0 +1,33 @@
+# Sub-flow: fresh launch, skip onboarding, sign in as the seeded customer.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Skip|.*Sign In with Email|Available Services"
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Skip"
+    commands:
+      - tapOn: "Skip"
+- extendedWaitUntil:
+    visible: ".*Sign In with Email"
+    timeout: 15000
+- tapOn: ".*Sign In with Email"
+- tapOn: "your.email@example.com"
+- inputText: "customer@dohuub.com"
+- tapOn: "Enter your password"
+- inputText: "Password123!"
+- hideKeyboard
+# Dismissing the keyboard submits the form on iOS; tap the button only if still on the screen.
+- runFlow:
+    when:
+      visible: "Enter your credentials to continue"
+    commands:
+      - tapOn:
+          text: "Sign In"
+          index: 1
+- extendedWaitUntil:
+    visible: ".*Send a Package.*"
+    timeout: 30000

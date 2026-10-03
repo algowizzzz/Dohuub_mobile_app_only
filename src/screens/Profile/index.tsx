@@ -224,6 +224,12 @@ function SignedInProfile() {
             onPress={() => navigation.navigate('ShoppingList')}
           />
           <MenuRow
+            testID="profile-my-deliveries"
+            icon="bicycle-outline"
+            label="My Deliveries"
+            onPress={() => navigation.navigate('MyDeliveries')}
+          />
+          <MenuRow
             icon="location-outline"
             label="Saved Addresses"
             onPress={() => navigation.navigate('SavedAddresses')}

@@ -29,7 +29,7 @@ export default function SubScreenHeader({
         includeTopInset ? { paddingTop: topInset + 8 } : null,
       ]}
     >
-      <TouchableOpacity style={styles.backButton} onPress={onBack} hitSlop={8}>
+      <TouchableOpacity style={styles.backButton} onPress={onBack} hitSlop={8} testID="header-back">
         <Icon name="chevron-back" size={26} color={colors.text} />
       </TouchableOpacity>
 

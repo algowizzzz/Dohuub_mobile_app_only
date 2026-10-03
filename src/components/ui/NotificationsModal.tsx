@@ -21,6 +21,7 @@ type IconMeta = { icon: string; color: string; bg: string };
 
 const ICONS: Record<string, IconMeta> = {
   order: { icon: 'cube-outline', color: '#2E7AD9', bg: 'rgba(46,122,217,0.12)' },
+  delivery: { icon: 'bicycle-outline', color: '#0F766E', bg: 'rgba(15,118,110,0.12)' },
   promo: { icon: 'notifications-outline', color: '#A855F7', bg: 'rgba(168,85,247,0.12)' },
   update: { icon: 'checkmark-circle-outline', color: '#22C55E', bg: 'rgba(34,197,94,0.12)' },
   reminder: { icon: 'time-outline', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
@@ -34,6 +35,7 @@ function iconMetaFor(notification: ApiNotification): IconMeta {
   if (/remind|upcoming/.test(blob)) return ICONS.reminder;
   if (/complete|rated|finished/.test(blob)) return ICONS.update;
   if (/point|reward|gift/.test(blob)) return ICONS.points;
+  if (/delivery|rider/.test(blob)) return ICONS.delivery;
   if (/progress|placed|order|book|package|payment/.test(blob)) return ICONS.order;
   return ICONS.default;
 }
@@ -106,6 +108,11 @@ export default function NotificationsModal({ visible, onClose }: Props) {
   const openNotification = async (notification: ApiNotification) => {
     await markRead(notification.id).catch(() => {});
     onClose();
+    const deliveryId = notification.data?.deliveryId;
+    if (notification.data?.type === 'delivery' && typeof deliveryId === 'string' && deliveryId) {
+      navigation.navigate('DeliveryDetail', { deliveryId });
+      return;
+    }
     const bookingId = notification.data?.bookingId;
     if (typeof bookingId === 'string' && bookingId) {
       navigation.navigate('BookingDetail', { bookingId });

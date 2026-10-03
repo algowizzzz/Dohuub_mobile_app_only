@@ -1,0 +1,99 @@
+# DoHuub Delivery — the "unhappy" rules on STAGING:
+#   cancel before assignment → repost → rider accepts the fare (API) → pay
+#   → no Cancel after assignment, only "Report a problem" → disputed banner.
+# Run: ~/.maestro/bin/maestro test -e APP_ID=<bundle id> -e PLATFORM=ios|android .maestro/delivery/cancel-repost-dispute.yaml
+appId: ${APP_ID}
+---
+- runFlow: login.yaml
+- runFlow:
+    file: send-package-form.yaml
+    env:
+      PREFIX: "b"
+
+# Cancel while still waiting for riders
+- extendedWaitUntil:
+    visible: "Finding nearby riders…"
+    timeout: 20000
+- tapOn:
+    id: "delivery-cancel"
+# ConfirmModal (shared component) exposes a single merged element on iOS, so tap the button by position there.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          point: "70%,59%"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "delivery-cancel-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "delivery-status-cancelled"
+    timeout: 15000
+- assertVisible:
+    id: "delivery-repost"
+- takeScreenshot: screenshots/${PLATFORM}-b11-cancelled
+
+# Repost at a higher fare
+- tapOn:
+    id: "delivery-repost-fare"
+- eraseText: 10
+- inputText: "12"
+- assertVisible: "12"
+- tapOn: "Fare (USD)"
+- tapOn:
+    id: "delivery-repost-submit"
+- extendedWaitUntil:
+    visible: "Finding nearby riders…"
+    timeout: 15000
+- takeScreenshot: screenshots/${PLATFORM}-b12-reposted
+
+# Rider accepts the proposed fare → choose → pay
+- runScript:
+    file: scripts/rider.js
+    env:
+      ACTION: respond
+      KIND: accept
+- extendedWaitUntil:
+    visible: "1 rider responded"
+    timeout: 20000
+- assertVisible: "Accepted your fare"
+- tapOn:
+    id: "offer-select-0"
+- extendedWaitUntil:
+    visible: "Confirm and pay"
+    timeout: 15000
+- tapOn:
+    id: "delivery-pay"
+- extendedWaitUntil:
+    visible:
+      id: "delivery-status-assigned"
+    timeout: 20000
+
+# After assignment: no cancel, only report a problem
+- assertNotVisible:
+    id: "delivery-cancel"
+- scrollUntilVisible:
+    element:
+      id: "delivery-report-problem"
+- tapOn:
+    id: "delivery-report-problem"
+- tapOn: "Rider is not moving"
+- tapOn:
+    id: "delivery-problem-details"
+- inputText: "Maestro test - rider has not moved for 20 minutes"
+- tapOn: "DoHuub support reviews every report.*"
+- tapOn:
+    id: "delivery-problem-submit"
+- assertNotVisible:
+    id: "delivery-report-problem"
+- scrollUntilVisible:
+    element: "Problem reported — DoHuub support is reviewing"
+    direction: UP
+    timeout: 15000
+- assertVisible:
+    id: "delivery-status-disputed"
+- takeScreenshot: screenshots/${PLATFORM}-b13-disputed

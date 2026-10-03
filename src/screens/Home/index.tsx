@@ -20,6 +20,9 @@ import SelectLocationModal from './components/SelectLocationModal';
 import ServiceCard from './components/ServiceCard';
 import HomeSearchBar from './components/HomeSearchBar';
 import RewardsWidget from './components/RewardsWidget';
+import SendPackageCard from './components/SendPackageCard';
+import { deliveryApi } from '../../services/deliveryApi';
+import { ACTIVE_STATUSES } from '../Delivery/deliveryMeta';
 import { styles } from './styles';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -37,6 +40,7 @@ export default function HomeScreen() {
   const signedIn = useIsSignedIn();
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeDeliveries, setActiveDeliveries] = useState(0);
 
   const [categories, setCategories] = useState<ApiVendorCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -71,6 +75,14 @@ export default function HomeScreen() {
       loadAddresses().catch(() => {}),
       loadBookings().catch(() => {}),
       loadRewardsBalance().catch(() => {}),
+      deliveryApi
+        .listMine({ limit: 1 })
+        .then(r =>
+          setActiveDeliveries(
+            ACTIVE_STATUSES.reduce((sum, status) => sum + (r.counts[status] ?? 0), 0),
+          ),
+        )
+        .catch(() => {}),
     ]).then(() => {});
   }, [signedIn, loadAddresses, loadBookings, loadRewardsBalance]);
 
@@ -144,6 +156,20 @@ export default function HomeScreen() {
           onPress={() => {
             if (requireAuth('Sign in to earn points on every booking and order.')) {
               navigation.navigate('RewardsWallet');
+            }
+          }}
+        />
+
+        <SendPackageCard
+          activeCount={signedIn ? activeDeliveries : 0}
+          onPress={() => {
+            if (requireAuth('Sign in to send a package with a DoHuub rider.')) {
+              navigation.navigate('SendPackage', undefined);
+            }
+          }}
+          onMyDeliveries={() => {
+            if (requireAuth('Sign in to see your deliveries.')) {
+              navigation.navigate('MyDeliveries');
             }
           }}
         />

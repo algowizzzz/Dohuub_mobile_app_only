@@ -67,6 +67,10 @@ export type RootStackParamList = {
   LeaveReview: { bookingId: string };
   /** Profile → Display currency; open to guests too. */
   CurrencyPicker: undefined;
+  /** DoHuub Delivery: a package, or (with `orderId`) a rider for the customer's own paid marketplace order. */
+  SendPackage: { orderId?: string } | undefined;
+  DeliveryDetail: { deliveryId: string };
+  MyDeliveries: undefined;
 };
 
 declare global {

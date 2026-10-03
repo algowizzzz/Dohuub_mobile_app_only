@@ -1,0 +1,115 @@
+# DoHuub Delivery — customer happy path on STAGING.
+#   login → Send a Package → rider counters (API) → choose rider → test payment
+#   → rider assigned → picked up / on the way (API) → delivered (API) → rate.
+# Run: ~/.maestro/bin/maestro test -e APP_ID=<bundle id> .maestro/delivery/send-package-e2e.yaml
+#   iOS APP_ID=org.reactjs.native.example.Dohuub   Android APP_ID=dohuub.app
+appId: ${APP_ID}
+---
+- runFlow: login.yaml
+
+# 1. Form
+- runFlow:
+    file: send-package-form.yaml
+    env:
+      PREFIX: ""
+
+# 2. Waiting for riders
+- extendedWaitUntil:
+    visible: "Finding nearby riders…"
+    timeout: 20000
+- assertVisible:
+    id: "delivery-countdown"
+- assertVisible: "Cancel request"
+- takeScreenshot: screenshots/${PLATFORM}-04-waiting
+
+# 3. A rider counters at 10.00 (API), app polls every 5 s
+- runScript:
+    file: scripts/rider.js
+    env:
+      ACTION: respond
+      AMOUNT: "10"
+- extendedWaitUntil:
+    visible: "1 rider responded"
+    timeout: 20000
+- takeScreenshot: screenshots/${PLATFORM}-05-offers
+- tapOn:
+    id: "offer-select-0"
+
+# 4. Pay (staging = test mode)
+- extendedWaitUntil:
+    visible: "Confirm and pay"
+    timeout: 15000
+- takeScreenshot: screenshots/${PLATFORM}-06-pay
+- tapOn:
+    id: "delivery-pay"
+- extendedWaitUntil:
+    visible: "Test payment — no real money moves."
+    timeout: 20000
+- assertVisible:
+    id: "delivery-status-assigned"
+- assertNotVisible: "Cancel request"
+- scrollUntilVisible:
+    element: "Report a problem"
+- takeScreenshot: screenshots/${PLATFORM}-07-assigned
+- scrollUntilVisible:
+    element: "Test payment — no real money moves."
+    direction: UP
+
+# 5. Rider progresses (API) — screen follows by polling
+- runScript:
+    file: scripts/rider.js
+    env:
+      ACTION: advance
+      STATUS: picked_up
+- runScript:
+    file: scripts/rider.js
+    env:
+      ACTION: advance
+      STATUS: in_transit
+- extendedWaitUntil:
+    visible:
+      id: "delivery-status-in_transit"
+    timeout: 20000
+- takeScreenshot: screenshots/${PLATFORM}-08-in-transit
+- runScript:
+    file: scripts/rider.js
+    env:
+      ACTION: advance
+      STATUS: delivered
+
+# 6. Delivered → rate
+- extendedWaitUntil:
+    visible: "How was your delivery?"
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: "delivery-rate-submit"
+- takeScreenshot: screenshots/${PLATFORM}-09-delivered
+- tapOn:
+    id: "star-5"
+- tapOn:
+    id: "delivery-rate-submit"
+- extendedWaitUntil:
+    visible: "Your rating"
+    timeout: 15000
+- takeScreenshot: screenshots/${PLATFORM}-10-rated
+
+# 7. It shows under My Deliveries → Completed
+- waitForAnimationToEnd
+- repeat:
+    times: 3
+    while:
+      notVisible: ".*My deliveries.*"
+    commands:
+      - tapOn:
+          id: "header-back"
+      - waitForAnimationToEnd
+- tapOn:
+    id: "home-my-deliveries"
+- tapOn:
+    id: "deliveries-tab-completed"
+- extendedWaitUntil:
+    visible:
+      id: "delivery-row-${output.reference}"
+    timeout: 10000
+- takeScreenshot: screenshots/${PLATFORM}-11-list

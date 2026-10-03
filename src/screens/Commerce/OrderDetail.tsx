@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
 import MainScreenLayout from '../../components/layout/MainScreenLayout';
@@ -12,6 +14,8 @@ import { useCommerceStore } from '../../store/commerceStore';
 import type { ApiCommerceOrder } from '../../services/commerceApi';
 import { commerceStyles as styles, ORDER_STATUS_LABEL } from './styles';
 import Price from '../../components/ui/Price';
+import { deliveryApi, type Delivery } from '../../services/deliveryApi';
+import { ACTIVE_STATUSES, DELIVERY_STATUS_META } from '../Delivery/deliveryMeta';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OrderDetail'>;
 
@@ -31,6 +35,20 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
   };
 
   useEffect(load, [route.params.orderId]);
+
+  // A paid, undelivered order can get a DoHuub rider; if one is already on it, link to tracking.
+  const [riderDelivery, setRiderDelivery] = useState<Delivery | null>(null);
+  const riderEligible =
+    !!order && order.paymentStatus === 'paid' && order.status !== 'delivered' && order.status !== 'cancelled';
+  useFocusEffect(
+    useCallback(() => {
+      if (!order) return;
+      deliveryApi
+        .listMine({ orderId: order.id, limit: 10 })
+        .then(r => setRiderDelivery(r.items.find(x => ACTIVE_STATUSES.includes(x.status)) ?? r.items[0] ?? null))
+        .catch(() => {});
+    }, [order]),
+  );
 
   if (loading) {
     return (
@@ -104,6 +122,30 @@ export default function OrderDetailScreen({ navigation, route }: Props) {
 <Price amount={order.totalAmount} currency={order.currency} style={{ fontWeight: '700', color: colors.text }} align="right" />
           </View>
         </View>
+
+        {riderDelivery && (ACTIVE_STATUSES.includes(riderDelivery.status) || riderDelivery.status === 'delivered') ? (
+          <TouchableOpacity
+            testID="order-track-rider"
+            style={[styles.card, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('DeliveryDetail', { deliveryId: riderDelivery.id })}
+          >
+            <Icon name="bicycle" size={24} color={colors.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontWeight: '700', color: colors.text }}>DoHuub rider · {riderDelivery.reference}</Text>
+              <Text style={{ color: DELIVERY_STATUS_META[riderDelivery.status].color, marginTop: 2 }}>
+                {DELIVERY_STATUS_META[riderDelivery.status].label}
+              </Text>
+            </View>
+            <Icon name="chevron-forward" size={20} color={colors.textFaint} />
+          </TouchableOpacity>
+        ) : riderEligible ? (
+          <PrimaryButton
+            label="Get a DoHuub rider"
+            testID="order-get-rider"
+            onPress={() => navigation.navigate('SendPackage', { orderId: order.id })}
+          />
+        ) : null}
 
         {order.paymentStatus !== 'paid' && order.status === 'pending_payment' ? (
           <PrimaryButton

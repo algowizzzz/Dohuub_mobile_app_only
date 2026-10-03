@@ -51,6 +51,9 @@ import RentalDatesScreen from '../screens/Rentals/RentalDatesScreen';
 import RentalStayDetailsScreen from '../screens/Rentals/RentalStayDetailsScreen';
 import RentalConfirmScreen from '../screens/Rentals/RentalConfirmScreen';
 import CurrencyPickerScreen from '../screens/CurrencyPicker';
+import SendPackageScreen from '../screens/Delivery/SendPackage';
+import DeliveryDetailScreen from '../screens/Delivery/DeliveryDetail';
+import MyDeliveriesScreen from '../screens/Delivery/MyDeliveries';
 
 // Account-only screens. Entry points gate with requireAuth(); these guards
 // catch anything that slips past (deep links, missed buttons).
@@ -73,6 +76,9 @@ const guarded = {
   EditProfile: withAuthGuard(EditProfileScreen, 'Sign in to edit your profile.'),
   BookingDetail: withAuthGuard(BookingDetailScreen, 'Sign in to view your bookings.'),
   LeaveReview: withAuthGuard(LeaveReviewScreen, 'Sign in to leave a review.'),
+  SendPackage: withAuthGuard(SendPackageScreen, 'Sign in to send a package with a DoHuub rider.'),
+  DeliveryDetail: withAuthGuard(DeliveryDetailScreen, 'Sign in to track your delivery.'),
+  MyDeliveries: withAuthGuard(MyDeliveriesScreen, 'Sign in to see your deliveries.'),
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -132,6 +138,9 @@ export default function RootNavigator() {
       <Stack.Screen name="BookingDetail" component={guarded.BookingDetail} options={mainAppScreenOptions} />
       <Stack.Screen name="LeaveReview" component={guarded.LeaveReview} options={mainAppScreenOptions} />
       <Stack.Screen name="CurrencyPicker" component={CurrencyPickerScreen} options={mainAppScreenOptions} />
+      <Stack.Screen name="SendPackage" component={guarded.SendPackage} options={mainAppScreenOptions} />
+      <Stack.Screen name="DeliveryDetail" component={guarded.DeliveryDetail} options={mainAppScreenOptions} />
+      <Stack.Screen name="MyDeliveries" component={guarded.MyDeliveries} options={mainAppScreenOptions} />
     </Stack.Navigator>
   );
 }

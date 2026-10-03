@@ -11,6 +11,7 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     screens: {
       Payment: 'checkout/return',
+      DeliveryDetail: 'deliveries/:deliveryId',
     },
   },
 };

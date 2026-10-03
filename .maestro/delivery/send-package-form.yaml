@@ -1,0 +1,60 @@
+# Sub-flow: from Home, fill "Send a Package" (Home → 2201 S Lamar, Jordan Ellis, Small box,
+# fare from the fare guide) and submit. Expects to start on Home, signed in.
+appId: ${APP_ID}
+---
+- waitForAnimationToEnd
+- repeat:
+    times: 3
+    while:
+      notVisible:
+        id: "pickup-other"
+    commands:
+      - tapOn:
+          id: "home-send-package"
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
+      id: "pickup-selected"
+    timeout: 15000
+- takeScreenshot: screenshots/${PLATFORM}-${PREFIX}01-form
+- tapOn:
+    id: "dropoff-other"
+- tapOn: "Search for an address or place"
+- inputText: "2201 S Lamar Blvd Austin"
+- extendedWaitUntil:
+    visible: ".*Lamar Blvd, Austin.*"
+    timeout: 15000
+- tapOn: ".*Lamar Blvd, Austin.*"
+- extendedWaitUntil:
+    visible:
+      id: "dropoff-selected"
+    timeout: 15000
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: "recipient-name"
+- tapOn:
+    id: "recipient-name"
+- inputText: "Jordan Ellis"
+- tapOn: "Recipient"
+- scrollUntilVisible:
+    element:
+      id: "parcel-description"
+- tapOn:
+    id: "parcel-description"
+- inputText: "Small box"
+- tapOn: "What are you sending?"
+- scrollUntilVisible:
+    element:
+      id: "fare-guide"
+    timeout: 15000
+- takeScreenshot: screenshots/${PLATFORM}-${PREFIX}02-fare-guide
+- tapOn:
+    id: "fare-guide"
+- scrollUntilVisible:
+    element:
+      id: "send-package-submit"
+- takeScreenshot: screenshots/${PLATFORM}-${PREFIX}03-ready
+- tapOn:
+    id: "send-package-submit"
+
