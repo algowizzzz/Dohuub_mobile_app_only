@@ -264,11 +264,14 @@ export default function SendPackageScreen({ navigation, route }: Props) {
   const pickup = resolveStop(pickupChoice, pickupOther);
   const dropoff = resolveStop(dropoffChoice, dropoffOther);
 
-  // Fare guide once both ends have coordinates.
-  const pLat = pickup?.lat;
-  const pLng = pickup?.lng;
-  const dLat = dropoff?.lat;
-  const dLng = dropoff?.lng;
+  // Fare guide once both ends have coordinates. For an order the ends are the
+  // store and the order's delivery address (the order API includes lat/lng).
+  const orderStore = (order as any)?.store;
+  const orderDrop = (order as any)?.deliveryAddress;
+  const pLat = orderId ? orderStore?.lat ?? undefined : pickup?.lat;
+  const pLng = orderId ? orderStore?.lng ?? undefined : pickup?.lng;
+  const dLat = orderId ? orderDrop?.lat ?? undefined : dropoff?.lat;
+  const dLng = orderId ? orderDrop?.lng ?? undefined : dropoff?.lng;
   useEffect(() => {
     if (pLat == null || pLng == null || dLat == null || dLng == null) {
       setEstimate(null);

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ActivityIndicator,
   Modal,
+  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -68,9 +69,12 @@ export default function ConfirmModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={dismiss}>
-      <TouchableWithoutFeedback onPress={dismiss}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback onPress={() => {}}>
+      <View style={styles.overlay}>
+        {/* Backdrop is a sibling, not a wrapper: wrapping the sheet in a touchable
+            made iOS accessibility (and Maestro) read the whole dialog as one element. */}
+        <TouchableWithoutFeedback onPress={dismiss} accessible={false}>
+          <View style={StyleSheet.absoluteFill} />
+        </TouchableWithoutFeedback>
             <View style={styles.sheet}>
               <View style={styles.header}>
                 <Text style={styles.title}>{title}</Text>
@@ -124,9 +128,7 @@ export default function ConfirmModal({
                 </TouchableOpacity>
               </View>
             </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+      </View>
     </Modal>
   );
 }

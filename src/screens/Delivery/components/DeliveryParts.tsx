@@ -212,9 +212,14 @@ export function OfferCard({
   );
 }
 
+const mapOverlay = { position: 'absolute' as const, top: 0, left: 0, right: 0, bottom: 0, opacity: 0.01 };
+
 export function DeliveryMap({ delivery }: { delivery: Delivery }) {
   const [failed, setFailed] = useState(false);
   const url = deliveryMapUrl(delivery);
+  // Keep showing the last loaded map until the new one (rider moved) has
+  // loaded underneath, so the map never blanks or flashes the old frame.
+  const [shown, setShown] = useState<string | null>(url);
   const openMaps = () => {
     const d = delivery;
     if (d.pickup.lat == null || d.dropoff.lat == null) return;
@@ -225,7 +230,18 @@ export function DeliveryMap({ delivery }: { delivery: Delivery }) {
   return (
     <TouchableOpacity style={styles.mapWrap} activeOpacity={0.95} onPress={openMaps} testID="delivery-map">
       {url && !failed ? (
-        <Image source={{ uri: url }} style={styles.map} resizeMode="cover" onError={() => setFailed(true)} />
+        <>
+          {shown ? <Image source={{ uri: shown }} style={styles.map} resizeMode="cover" /> : null}
+          {url !== shown ? (
+            <Image
+              source={{ uri: url }}
+              style={[styles.map, mapOverlay]}
+              resizeMode="cover"
+              onLoad={() => setShown(url)}
+              onError={() => (shown ? setShown(shown) : setFailed(true))}
+            />
+          ) : null}
+        </>
       ) : (
         <View style={styles.mapFallback}>
           <Icon name="map-outline" size={28} color={colors.primary} />

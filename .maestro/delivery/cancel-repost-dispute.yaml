@@ -16,19 +16,8 @@ appId: ${APP_ID}
     timeout: 20000
 - tapOn:
     id: "delivery-cancel"
-# ConfirmModal (shared component) exposes a single merged element on iOS, so tap the button by position there.
-- runFlow:
-    when:
-      platform: iOS
-    commands:
-      - tapOn:
-          point: "70%,59%"
-- runFlow:
-    when:
-      platform: Android
-    commands:
-      - tapOn:
-          id: "delivery-cancel-confirm"
+- tapOn:
+    id: "delivery-cancel-confirm"
 - extendedWaitUntil:
     visible:
       id: "delivery-status-cancelled"

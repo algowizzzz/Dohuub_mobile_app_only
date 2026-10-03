@@ -35,15 +35,19 @@ appId: ${APP_ID}
       id: "recipient-name"
 - tapOn:
     id: "recipient-name"
+- waitForAnimationToEnd
 - inputText: "Jordan Ellis"
-- tapOn: "Recipient"
+# Close the keyboard explicitly: tapping a heading does not dismiss it on Android.
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "parcel-description"
 - tapOn:
     id: "parcel-description"
+# Android re-lays out when the keyboard opens; type only once it has settled.
+- waitForAnimationToEnd
 - inputText: "Small box"
-- tapOn: "What are you sending?"
+- hideKeyboard
 - scrollUntilVisible:
     element:
       id: "fare-guide"
