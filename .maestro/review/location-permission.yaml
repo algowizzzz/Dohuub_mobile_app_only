@@ -1,0 +1,50 @@
+# App Store guideline 5.1.1(iv): the location explainer has ONE neutral button
+# ("Continue"), no Skip, and always leads to the system permission prompt; the
+# app carries on whatever the user chooses.
+appId: org.reactjs.native.example.Dohuub
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: unset
+- extendedWaitUntil:
+    visible: "Welcome to DoHuub"
+    timeout: 60000
+- tapOn: "Skip"
+- extendedWaitUntil:
+    visible: ".*Sign In with Email"
+    timeout: 20000
+- tapOn: ".*Sign In with Email"
+- tapOn: "your.email@example.com"
+- inputText: ${EMAIL}
+- tapOn: "Enter your password"
+- inputText: "Password123!"
+- hideKeyboard
+- tapOn:
+    text: "Sign In"
+    index: -1
+# iOS offers to save the password after sign-in, on top of the next screen.
+# It is system UI (not readable by text), so tap "Not Now" by position.
+- swipe:
+    start: "50%,95%"
+    end: "50%,94%"
+    duration: 4000
+- tapOn:
+    point: "41%,60%"
+- extendedWaitUntil:
+    visible: "Location Services"
+    timeout: 45000
+- assertVisible: "Continue"
+- assertNotVisible: "Allow Location Access"
+- assertNotVisible: "Skip"
+- takeScreenshot: .maestro/review/01-explainer
+- tapOn: ".*Continue"
+- extendedWaitUntil:
+    visible: "Don.t Allow"
+    timeout: 20000
+- takeScreenshot: .maestro/review/02-system-prompt
+- tapOn: "Don.t Allow"
+- extendedWaitUntil:
+    notVisible: "Location Services"
+    timeout: 30000
+- takeScreenshot: .maestro/review/03-after-decline

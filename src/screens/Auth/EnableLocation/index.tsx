@@ -58,7 +58,10 @@ export default function EnableLocationScreen({ navigation }: Props) {
     );
   };
 
-  const handleAllow = async () => {
+  // App Store guideline 5.1.1(iv): this screen only explains why we ask. Its
+  // single neutral button always goes on to the system permission prompt, and
+  // whatever the user chooses there, the app carries on.
+  const handleContinue = async () => {
     if (requesting) return;
     setRequesting(true);
     const coords = await getCurrentLocation();
@@ -82,14 +85,15 @@ export default function EnableLocationScreen({ navigation }: Props) {
           <Icon name="location-outline" size={48} color={colors.primary} />
         </View>
 
-        <Text style={styles.title}>Enable Location Services</Text>
+        <Text style={styles.title}>Location Services</Text>
         <Text style={styles.subtitle}>
-          DoHuub uses your location to show nearby services and providers
+          DoHuub uses your location to show nearby services and providers, and to fill in your address
+          faster. You can change this at any time in Settings.
         </Text>
 
         <TouchableOpacity
           style={styles.allowButton}
-          onPress={handleAllow}
+          onPress={handleContinue}
           disabled={requesting || loading}
           activeOpacity={0.85}
         >
@@ -100,13 +104,9 @@ export default function EnableLocationScreen({ navigation }: Props) {
             style={styles.allowButtonGradient}
           >
             <Text style={styles.allowLabel}>
-              {requesting || loading ? 'Requesting…' : 'Allow Location Access'}
+              {requesting || loading ? 'One moment…' : 'Continue'}
             </Text>
           </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={goNext} hitSlop={8} disabled={requesting}>
-          <Text style={styles.skipLabel}>Skip</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
