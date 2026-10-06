@@ -17,11 +17,14 @@ async function requestAndroidPermission(): Promise<boolean> {
 export function useCurrentLocation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** True once the user has declined location — screens offer a link to Settings. */
+  const [denied, setDenied] = useState(false);
 
   const getCurrentLocation = (): Promise<Coordinates | null> => {
     return new Promise(resolve => {
       setLoading(true);
       setError(null);
+      setDenied(false);
 
       const fetchPosition = (highAccuracy: boolean, fallback: boolean) => {
         Geolocation.getCurrentPosition(
@@ -38,9 +41,10 @@ export function useCurrentLocation() {
               return;
             }
             setLoading(false);
+            if (error.code === 1) setDenied(true);
             const message =
               error.code === 1
-                ? 'Location permission denied. Enable it in your device settings.'
+                ? 'Location is turned off for DoHuub. You can turn it on in Settings, or enter your address manually.'
                 : error.code === 3
                   ? 'Location timed out. Try again outdoors, or turn on GPS.'
                   : 'Could not get your location. Check your device settings.';
@@ -59,7 +63,8 @@ export function useCurrentLocation() {
         requestAndroidPermission().then(granted => {
           if (!granted) {
             setLoading(false);
-            setError('Location permission denied.');
+            setDenied(true);
+            setError('Location is turned off for DoHuub. You can turn it on in Settings, or enter your address manually.');
             resolve(null);
             return;
           }
@@ -71,5 +76,5 @@ export function useCurrentLocation() {
     });
   };
 
-  return { getCurrentLocation, loading, error };
+  return { getCurrentLocation, loading, error, denied };
 }

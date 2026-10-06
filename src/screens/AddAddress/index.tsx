@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
   ScrollView,
   Text,
   TextInput,
@@ -54,7 +55,7 @@ export default function AddAddressScreen({ navigation, route }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
 
-  const { getCurrentLocation, loading: locating, error: locationError } = useCurrentLocation();
+  const { getCurrentLocation, loading: locating, error: locationError, denied: locationDenied } = useCurrentLocation();
 
   const latNum = lat ? Number(lat) : NaN;
   const lngNum = lng ? Number(lng) : NaN;
@@ -192,6 +193,12 @@ export default function AddAddressScreen({ navigation, route }: Props) {
           </TouchableOpacity>
 
           {locationError ? <ErrorBanner message={locationError} /> : null}
+          {locationDenied ? (
+            // The user declined location earlier; point them to Settings rather than asking again.
+            <TouchableOpacity onPress={() => Linking.openSettings()} hitSlop={8} testID="open-location-settings">
+              <Text style={{ color: colors.primary, fontWeight: '600', marginTop: 6 }}>Open Settings</Text>
+            </TouchableOpacity>
+          ) : null}
           {lookupError ? <ErrorBanner message={lookupError} /> : null}
 
           {hasPin ? (
